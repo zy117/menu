@@ -3,9 +3,9 @@ package com.haiziguo.recipe.balence;
 import java.util.Comparator;
 
 public class Nutrition {
-	private Integer index;
-	private Float percent;
-	private Float percent2max;
+	private Integer index;  //Nutrition index
+	private Float percent;	//standard %
+	private Float percent2max; // percent to target_max  percent2max = (target+target_max)*100-percent
 	
 	public Nutrition(Integer index,Float percent){
 		this.index = index;

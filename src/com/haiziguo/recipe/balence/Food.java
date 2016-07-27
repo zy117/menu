@@ -1,9 +1,8 @@
 package com.haiziguo.recipe.balence;
 
-import java.util.Date;
-
 public class Food {
-    private Date date;
+	private Integer id;
+    private Integer day;
     private Integer meal;
     private String menuName;
     private Integer menuId;
@@ -13,7 +12,8 @@ public class Food {
     private Integer reduce_gram;
     private Integer foodId;
 
-    private Integer isFromMarket;
+    private Integer foodPart = 100;
+    private Boolean isAdjustable = true;
     
     private Integer type1;
     private Integer type2;
@@ -24,6 +24,7 @@ public class Food {
     private Float fat=0.0f;
     private Float carbohydrate=0.0f;
     
+    private Float na=0.0f;
     private Float ca=0.0f;
     private Float fe=0.0f;
     private Float zn=0.0f;
@@ -32,6 +33,7 @@ public class Food {
     private Float vb1=0.0f;
     private Float vb2=0.0f;
     private Float vc=0.0f;
+    private Float ve=0.0f;
     
 	public Float getIndex(Integer index){
 		switch(index){
@@ -55,6 +57,10 @@ public class Food {
 			return vb2;
 		case 10:
 			return vc;
+		case 11:
+			return ve;
+		case 12:
+			return na;
 		case 0:
 		default:
 			return energy;
@@ -65,13 +71,33 @@ public class Food {
     	
     }
     
+    /**
+     * @author zhangy@mywayinfo.com
+     * @version 0.0.1
+     * @param energy 能量，单位（千卡/100g）
+     * @param protein 蛋白质，单位（克/100g）
+     * @param fat 脂肪，单位（克/100g)
+     * @param carbohydrate 碳水化合物，单位（克/100g)
+     * @param ca 钙，单位（毫克/100g)
+     * @param fe 铁，单位（毫克/100g)
+     * @param zn 锌，单位（毫克/100g)
+     * @param va 维生素A，单位（微克/100g)
+     * @param vb1 维生素B1，单位（毫克/100g)
+     * @param vb2 维生素B2，单位（毫克/100g)
+     * @param vc 维生素C，单位（克/100g)
+     * 
+     */
     public Food(
-    		Integer meal
+    		Integer id
+    		,Integer day
+    		,Integer meal
     		,String menuName
     		,Integer menuId
     		,String foodName
     		,Integer foodId
     		,Integer gram
+    		,Integer foodPart
+    		,Boolean isAdjustable
     		,Float energy
     		,Float protein
     		,Float fat
@@ -84,14 +110,18 @@ public class Food {
     		,Float vb2
     		,Float vc
     		){
+    	this.id = id;
+    	this.day = day;
     	this.meal = meal;
     	this.menuName = menuName;
     	this.menuId = menuId;
     	this.foodName = foodName;
     	this.foodId = foodId;
     	this.gram = gram;
+    	this.setFoodPart(foodPart);
     	this.setAdd_gram(gram<<1);
     	this.setReduce_gram(gram>>1);
+    	this.isAdjustable = isAdjustable;
     	this.energy = energy;
     	this.protein = protein;
     	this.fat = fat;
@@ -106,7 +136,7 @@ public class Food {
     }
     
     public String toMenu(){
-    	return " "+meal+"\t"+menuName+"\t"+foodName+"\t"+gram;
+    	return " "+id+"\t"+day+"\t"+meal+"\t"+menuName+"\t"+foodId+"\t"+foodName+"\t"+gram;
     }
     public String toString(){
     	return "Food={"
@@ -133,13 +163,6 @@ public class Food {
     			+ "}";
     }
     
-    
-	public Date getDate() {
-		return date;
-	}
-	public void setDate(Date date) {
-		this.date = date;
-	}
 	public Integer getMeal() {
 		return meal;
 	}
@@ -175,12 +198,6 @@ public class Food {
 	}
 	public void setFoodId(Integer foodId) {
 		this.foodId = foodId;
-	}
-	public Integer getIsFromMarket() {
-		return isFromMarket;
-	}
-	public void setIsFromMarket(Integer isFromMarket) {
-		this.isFromMarket = isFromMarket;
 	}
 	public Integer getType1() {
 		return type1;
@@ -281,6 +298,54 @@ public class Food {
 
 	public void setReduce_gram(Integer reduce_gram) {
 		this.reduce_gram = reduce_gram;
+	}
+
+	public Integer getDay() {
+		return day;
+	}
+
+	public void setDay(Integer day) {
+		this.day = day;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Boolean getIsAdjustable() {
+		return isAdjustable;
+	}
+
+	public void setIsAdjustable(Boolean isAdjustable) {
+		this.isAdjustable = isAdjustable;
+	}
+
+	public Integer getFoodPart() {
+		return foodPart;
+	}
+
+	public void setFoodPart(Integer foodPart) {
+		this.foodPart = foodPart;
+	}
+
+	public Float getNa() {
+		return na;
+	}
+
+	public void setNa(Float na) {
+		this.na = na;
+	}
+
+	public Float getVe() {
+		return ve;
+	}
+
+	public void setVe(Float ve) {
+		this.ve = ve;
 	}
     
 }

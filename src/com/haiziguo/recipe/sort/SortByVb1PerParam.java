@@ -3,6 +3,7 @@ package com.haiziguo.recipe.sort;
 import java.util.Comparator;
 
 import com.haiziguo.recipe.balence.Food;
+import com.haiziguo.recipe.util.Define;
 
 public class SortByVb1PerParam implements Comparator<Object>{
 	private Boolean order;
@@ -16,7 +17,7 @@ public class SortByVb1PerParam implements Comparator<Object>{
 	public int compare(Object o1, Object o2) {
 		 Food s1 = (Food) o1;
 		 Food s2 = (Food) o2;
-		 if(s1.getVb1()<0.000001f || s2.getVb1()<0.000001f){
+		 if(s1.getVb1()<Define.FLOAT_ZERO || s2.getVb1()<Define.FLOAT_ZERO){
 			 	if(order)
 			 		return s1.getVb1().compareTo(s2.getVb1());
 			 	else
@@ -73,6 +74,16 @@ public class SortByVb1PerParam implements Comparator<Object>{
 		 			return ((Float)(s1.getVb1()/s1.getVc())).compareTo(((Float)(s2.getVb1()/s2.getVc())));
 		 		else
 		 			return ((Float)(s2.getVb1()/s2.getVc())).compareTo(((Float)(s1.getVb1()/s1.getVc())));
+		 	case 11:
+		 		if(order)
+		 			return ((Float)(s1.getVb1()/s1.getVe())).compareTo(((Float)(s2.getVb1()/s2.getVe())));
+		 		else
+		 			return ((Float)(s2.getVb1()/s2.getVe())).compareTo(((Float)(s1.getVb1()/s1.getVe())));
+		 	case 12:
+		 		if(order)
+		 			return ((Float)(s1.getVb1()/s1.getNa())).compareTo(((Float)(s2.getVb1()/s2.getNa())));
+		 		else
+		 			return ((Float)(s2.getVb1()/s2.getNa())).compareTo(((Float)(s1.getVb1()/s1.getNa())));
 		 	case 8:
 		 	default:
 		 		if(order)
