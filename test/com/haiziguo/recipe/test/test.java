@@ -70,7 +70,7 @@ public class test {
 		
 		Date t1 = new Date();
 		System.out.println("Init menu:start time="+t1.toString());
-		algorithm.InitFoodList(food);
+		algorithm.initFoodList(food);
 		algorithm.printMenu();
 		algorithm.setStandard(STANDARD);
 		Float Target [] = {0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f};
@@ -80,7 +80,7 @@ public class test {
 		algorithm.printMenu();
 		Date t2 = new Date();
 		System.out.println("end time:"+t2.toString());
-		System.out.println("cost=" +(t2.getTime()-t1.getTime()));
+		System.out.println("cost=" +(t2.getTime()-t1.getTime())+"ms");
 		
 	}
 

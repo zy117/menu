@@ -33,6 +33,6 @@ public interface Define {
 	public final static Integer REDUCE_STEP = 3;
 	
 	public final static Float [] DEFAULT_TARGET = {0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f};
-	public final static Float [] DEFAULT_TARGET_OVER_SHIFT = {0.1f,0.1f,0.1f,0.1f,1.2f,1.2f,1.2f,1.2f,1.2f,1.2f,1.2f};
-	public final static Float [] DEFAULT_TARGET_MAX_SHIFT = {0.2f,0.2f,0.2f,0.2f,2.2f,2.2f,2.2f,2.2f,2.2f,2.2f,2.2f};
+	public final static Float [] DEFAULT_TARGET_OVER_SHIFT = {0.1f,0.1f,0.1f,0.1f,0.6f,0.6f,0.6f,0.6f,0.6f,0.6f,0.6f};
+	public final static Float [] DEFAULT_TARGET_MAX_SHIFT = {0.2f,0.2f,0.2f,0.2f,1.2f,1.2f,1.2f,1.2f,1.2f,1.2f,1.2f};
 }

@@ -2,6 +2,7 @@ package com.haiziguo.recipe.balence;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -43,7 +44,7 @@ public class Algorithm {
      * @see Food()
      * 
      */
-	public void InitFoodList(List<Food> food){
+	public void initFoodList(List<Food> food){
 		this.food = new ArrayList<Food>(food);
 		days = 1;
 		Set<Integer> day = new HashSet<Integer>();
@@ -116,6 +117,7 @@ public class Algorithm {
 				}else{
 					per = (int) (temp.getIndex(i)/standard.getIndex(i)*target.getIndex(i))+2;
 					System.out.println("index "+i+" set "+f.getFoodName()+" per = "+per);
+					f.setAdd_gram(f.getGram());
 				}
 			}
 			f.setReduce_gram(f.getGram()/per);
@@ -147,6 +149,8 @@ public class Algorithm {
 
 		for(Nutrition n:nutrition){
 			n.setPercent(cal_nutrition_percent.getIndex(n.getIndex()));
+			n.setPercent2target(target.getIndex(n.getIndex())*100 - cal_nutrition_percent.getIndex(n.getIndex()));
+			n.setPercent2over(cal_nutrition_percent.getIndex(n.getIndex())-(target.getIndex(n.getIndex())+target_over_shift.getIndex(n.getIndex()))*100);
 			n.setPercent2max((target.getIndex(n.getIndex())+target_max_shift.getIndex(n.getIndex()))*100-cal_nutrition_percent.getIndex(n.getIndex()));
 		}
 		return cal_nutrition_percent.toFloatArray();
@@ -237,7 +241,7 @@ public class Algorithm {
 	
 	public void reduceFood(Integer index){
 		List<Nutrition> temp = new ArrayList<Nutrition>(nutrition);
-		Collections.sort(temp,new SortByPercentAsc());
+		Collections.sort(temp,new SortByPercent2OverAsc());
 		Integer param = temp.get(0).getIndex();
 		System.out.println("reduce index = " + index + ", param = "+ param);
 		boolean isEnd = false;
@@ -275,7 +279,7 @@ public class Algorithm {
 	
 	public void addFood(Integer index, List<Food> except){
 		if(except.size() == food.size()){
-			System.out.println(" no more food for add");
+			System.out.println("except full no more food for add");
 			return;
 		}
 		Integer param = 0;
@@ -288,6 +292,7 @@ public class Algorithm {
 			sortFood(index,param,Define.ORDER_DESC);
 			Iterator<Food> ifood = food.iterator();
 			Food f = new Food();
+			Boolean isAdded = false;
 			inner:
 			while(ifood.hasNext()){
 				f = ifood.next();
@@ -309,12 +314,14 @@ public class Algorithm {
 						canAdd = false;
 				}
 				for(int i =0;i<Define.NUM;i++){
-					if(gReachTarget.getIndex(i)-f.getIndex(i)/100<0.0f){
+					if(i!=index&&gReachTarget.getIndex(i)<f.getIndex(i)*f.getFoodPart()/10000){
+						param = i;
 						canAdd = false;
 					}
 				}
 				if(canAdd){
 					f.setGram(f.getGram()+1);
+					isAdded = true;
 					BalanceStep r = new BalanceStep();
 					r.setAddOrReduce(Define.ADD_1G);
 					r.setFood(f);
@@ -327,12 +334,12 @@ public class Algorithm {
 					break inner;
 				}
 			}
-			if(!ifood.hasNext()){
+			if(!isAdded){
 				System.out.println(" index "+index+" no more food add, "+ param+" reach max!");
 				break outter;
 			}
 		}
-		if(standard.getIndex(index)*target.getIndex(index)-cal_nutrition.getIndex(index)<0.0f){
+		if(standard.getIndex(index)*target.getIndex(index)<cal_nutrition.getIndex(index)){
 			System.out.println(" add index "+index+" end:"+standard.getIndex(index)+"*"+target.getIndex(index)+"<"+cal_nutrition.getIndex(index));
 		}else{
 			sortFood(param,index,Define.ORDER_DESC);
@@ -349,7 +356,7 @@ public class Algorithm {
 					}
 					if(!isExcepted)
 						except.add(f);
-					break;
+					continue;
 				}
 				if((f.getGram()>=f.getReduce_gram()+Define.REDUCE_STEP)&&f.getIsAdjustable()){
 					Float[] old_ = calNutrition(false).clone();
@@ -430,7 +437,7 @@ public class Algorithm {
 		System.out.println("balance all use "+step.size()+ "steps, involve " +map.size() + " food in list" );
 		
 		Iterator<Integer> imap = map.keySet().iterator();
-		Set<Integer> foodidmap = new HashSet<Integer>();
+		Set<Integer> foodidset = new HashSet<Integer>();
 		while(imap.hasNext()){
 			Integer id = imap.next();
 			//System.out.println("id = "+ id+",gram = "+ map.get(id));
@@ -442,10 +449,10 @@ public class Algorithm {
 					//System.out.println(f.toMenu());
 				}
 			}
-			if(foodidmap.contains(foodid)){
+			if(foodidset.contains(foodid)){
 				continue;
 			}
-			foodidmap.add(foodid);
+			foodidset.add(foodid);
 			//System.out.println("find same foodid");
 			for(Food f : food){
 				//System.out.println(f.toMenu());
@@ -498,12 +505,13 @@ public class Algorithm {
 			System.out.println("error! not inited, cannot do balance");
 			return null;
 		}
+		Date t1 = new Date();
 		standard.plusDays(days);
 		calNutrition(true);
-		calNutritionPerFood();
 		System.out.println("=====================step 1 reduce==========================");
+		calNutritionPerFood();
 		initTargetOver();		
-		Collections.sort(nutrition,new SortByPercentDesc());
+		Collections.sort(nutrition,new SortByPercent2OverDesc());
 		for(Nutrition n:nutrition){
 			if(gOverTarget.getIndex(n.getIndex())>0.0f){
 				System.out.println(n.getIndex()+" over "+(target.getIndex(n.getIndex())+target_over_shift.getIndex(n.getIndex()))*100+"%");
@@ -512,21 +520,27 @@ public class Algorithm {
 		}
 		System.out.println("=====================step 1 end=============================");
 		calNutrition(true);		
+		Date t2 = new Date();
+		System.out.println("step 1 cost=" +(t2.getTime()-t1.getTime())+"ms");
 		System.out.println("=====================step 2 add=============================");
 		initTargerReach();
-		Collections.sort(nutrition,new SortByPercent2MaxDesc());
+		Collections.sort(nutrition,new SortByPercent2TargetDesc());
 		for(Nutrition n:nutrition){
-			if(standard.getIndex(n.getIndex())*target.getIndex(n.getIndex())-cal_nutrition.getIndex(n.getIndex())>0.0f){
+			if(standard.getIndex(n.getIndex())*target.getIndex(n.getIndex())>cal_nutrition.getIndex(n.getIndex())){
 				System.out.println(n.getIndex()+" need reach target");
 				addFood(n.getIndex(),new ArrayList<Food>());
 			}
 		}
 		System.out.println("=====================step 2 end=============================");
 		calNutrition(true);
+		Date t3 = new Date();
+		System.out.println("step 2 cost=" +(t3.getTime()-t2.getTime())+"ms");
 		System.out.println("=====================step 3 balance==========================");
 		balanceDays();
 		System.out.println("=====================step 3 end==========================");
 		calNutrition(true);
+		Date t4 = new Date();
+		System.out.println("step 3 cost=" +(t4.getTime()-t3.getTime())+"ms");
 		return this.food;
 	}
 }
