@@ -159,13 +159,13 @@ public class test {
 		Date t1 = new Date();
 		System.out.println("Init menu:start time="+t1.toString());
 		algorithm.initFoodList(food);
-		algorithm.printMenu();
+		//algorithm.printMenu();
 		algorithm.setStandard(STANDARD);
 		Float Target [] = {0.9f,0.9f,0.9f,0.9f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f};
 		algorithm.setBalanceTarget(Target);
 		food = algorithm.doBalance();
 		System.out.println("Final balence menu:");
-		algorithm.printMenu();
+		//algorithm.printMenu();
 		Date t2 = new Date();
 		System.out.println("end time:"+t2.toString());
 		System.out.println("time cost =" +(t2.getTime()-t1.getTime())+"ms");

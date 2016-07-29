@@ -155,8 +155,10 @@ public class Algorithm {
 		Float fat_per = cal_nutrition.getIndex(Define.FAT)*9/energy_all;
 		Float carbohydrate_per = cal_nutrition.getIndex(Define.CARBOHYDRATE)*4/energy_all;
 		if(debug){
-			System.out.println("energy_all:"+energy_all);
-			System.out.println("protein:" + protein_per*100+"%,fat:"+fat_per*100+"%,carbohydrate:"+carbohydrate_per*100+"%");
+			System.out.println("energy_all  :" + energy_all);
+			System.out.println("protein     :" + protein_per*100+"%");
+			System.out.println("fat         :" + fat_per*100+"%");
+			System.out.println("carbohydrate:" + carbohydrate_per*100+"%");
 		}
 		
 		Float good_protein = 0.0f;
@@ -303,6 +305,7 @@ public class Algorithm {
 				BalanceStep r = new BalanceStep();
 				r.setAddOrReduce(Define.REDUCE_1G);
 				r.setFood(f);
+				r.setProcess(1);
 				step.add(r);
 				//System.out.println(r.toString());
 				for(int j =0;j<Define.NUM;j++){
@@ -376,6 +379,7 @@ public class Algorithm {
 					BalanceStep r = new BalanceStep();
 					r.setAddOrReduce(Define.ADD_1G);
 					r.setFood(f);
+					r.setProcess(2);
 					step.add(r);
 					//System.out.println(r.toString());
 					for(int i =0;i<Define.NUM;i++){
@@ -429,6 +433,7 @@ public class Algorithm {
 					BalanceStep r = new BalanceStep();
 					r.setAddOrReduce(Define.REDUCE_1G);
 					r.setFood(f);
+					r.setProcess(2);
 					for(Integer i=0;i<Define.REDUCE_STEP;i++){
 						step.add(r);
 					}
@@ -565,7 +570,7 @@ public class Algorithm {
 							Integer oldg = f.getGram();
 								if(map.containsKey(i)){
 									Integer bgram = (lgram.compareTo(0)==0)?(f.getGram()-map.get(i)+balance):f.getGram()+balance;
-									//System.out.println(" balance "+i+" food " + f.getFoodName() + " foodid " + f.getFoodId()+"gram = "+f.getGram()+" old= "+map.get(i)+" balance " +balance +" bgram = "+bgram + " lgram = "+lgram);
+									//System.out.println(" balance "+i+" food " + f.getFoodName() + " foodid " + f.getFoodId()+" gram = "+f.getGram()+" old= "+map.get(i)+" balance " +balance +" bgram = "+bgram + " lgram = "+lgram);
 									if(f.getReduce_gram()<=bgram&&f.getAdd_gram()>=bgram){
 										f.setGram(bgram);
 										offset-=balance;
@@ -611,6 +616,20 @@ public class Algorithm {
 									}
 								}
 								Integer newg = f.getGram();
+								BalanceStep r = new BalanceStep();
+								r.setFood(f);
+								r.setProcess(3);
+								if(newg>oldg){
+									//System.out.println("add "+ (newg-oldg));
+									r.setAddOrReduce(Define.ADD_1G);
+								}else{
+									//System.out.println("reduce" +(newg-oldg));
+									r.setAddOrReduce(Define.REDUCE_1G);
+								}
+								for(int n=0;n<Math.abs(newg-oldg);n++){
+									step.add(r);
+								}
+
 								Integer oldoffset = dayOffset.get(f.getDay());
 								dayOffset.put(f.getDay(), oldoffset+newg-oldg);
 							}			
@@ -671,5 +690,22 @@ public class Algorithm {
 		Date t4 = new Date();
 		System.out.println("step 3 cost=" +(t4.getTime()-t3.getTime())+"ms");
 		return this.food;
+	}
+	
+	public List<BalanceStep> getSteps(){
+		return this.step;
+	}
+	
+	public List<Object> getStepsMap(){
+		List<Object> l = new ArrayList<Object>();
+		Map<Integer,Integer> m = new HashMap<Integer,Integer>();
+		Iterator<BalanceStep> i = this.step.iterator();
+		while(i.hasNext()){
+			BalanceStep s = i.next();
+			m.put(s.getAddOrReduce(), s.getFood().getFoodId());
+			l.add(m);
+			m.clear();
+		}
+		return l;
 	}
 }
