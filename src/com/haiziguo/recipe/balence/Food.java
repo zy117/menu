@@ -109,6 +109,7 @@ public class Food {
     		,Float vb1
     		,Float vb2
     		,Float vc
+    		,Integer energytype 
     		){
     	this.id = id;
     	this.day = day;
@@ -133,10 +134,11 @@ public class Food {
     	this.vb1 = vb1;
     	this.vb2 = vb2;
     	this.vc = vc;
+    	this.type3 = energytype;
     }
     
     public String toMenu(){
-    	return " "+id+"\t"+day+"\t"+meal+"\t"+menuName+"\t"+foodId+"\t"+foodName+"\t"+gram;
+    	return " "+id+"\t"+day+"\t"+meal+"\t"+(menuName==null?menuName:(menuName.length()>6?menuName.substring(0, 5):menuName))+"\t"+foodId+"\t"+(foodName==null?foodName:(foodName.length()>6?foodName.substring(0, 5):foodName))+"\t"+gram;
     }
     public String toString(){
     	return "Food={"

@@ -18,9 +18,9 @@ public class BalanceStep {
 
 	public String toString(){
 		if(addOrReduce.compareTo(1)==0){
-			return "++++1g "+ food.getFoodName() + " day " +food.getDay(); 
+			return "++++1g "+ food.getFoodName() + " day " +food.getDay() +" type " + food.getType3(); 
 		}else{
-			return "----1g "+ food.getFoodName() + " day " +food.getDay(); 
+			return "----1g "+ food.getFoodName() + " day " +food.getDay() +" type " + food.getType3(); 
 		}
 	}
 }

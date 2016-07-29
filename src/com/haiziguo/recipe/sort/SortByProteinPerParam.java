@@ -19,9 +19,9 @@ public class SortByProteinPerParam implements Comparator<Object>{
 		 Food s2 = (Food) o2;
 		 if(s1.getProtein()<Define.FLOAT_ZERO || s2.getProtein()<Define.FLOAT_ZERO){
 			 	if(order)
-			 		return s1.getProtein().compareTo(s2.getFe());
+			 		return s1.getProtein().compareTo(s2.getProtein());
 			 	else
-			 		return s2.getProtein().compareTo(s1.getFe());
+			 		return s2.getProtein().compareTo(s1.getProtein());
 			 }
 		 switch(param){
 		 	case 0:
