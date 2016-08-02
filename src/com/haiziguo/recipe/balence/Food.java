@@ -109,6 +109,7 @@ public class Food {
     		,Float vb1
     		,Float vb2
     		,Float vc
+    		,Integer type1
     		,Integer energytype 
     		){
     	this.id = id;
@@ -134,6 +135,7 @@ public class Food {
     	this.vb1 = vb1;
     	this.vb2 = vb2;
     	this.vc = vc;
+    	this.type1 = type1;
     	this.type3 = energytype;
     }
     

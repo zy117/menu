@@ -27,6 +27,14 @@ public class Params {
     	return r;
     }
     
+    public Params minusParams(Params p){
+    	Params r = new Params();
+    	for(Integer index=0;index<Define.NUM;index++){
+    		r.setIndex(index, this.getIndex(index)-p.getIndex(index));
+    	}
+    	return r;
+    }
+    
 	public void plusDays(Integer days){
 		Integer plus = days;
 		if(plus<1)
