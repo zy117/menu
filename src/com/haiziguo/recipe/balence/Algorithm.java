@@ -284,6 +284,12 @@ public class Algorithm implements Balance{
 			case 10:
 				Collections.sort(food,new SortByVcPerParam(order,param));
 				break;
+			case 11:
+				Collections.sort(food,new SortByVePerParam(order,param));
+				break;
+			case 12:
+				Collections.sort(food,new SortByNaPerParam(order,param));
+				break;
 			default:
 				break;
 		}
@@ -343,7 +349,7 @@ public class Algorithm implements Balance{
 		}
 		Integer param = 0;
 		outter:
-		while(standard.getIndex(index)*target.getIndex(index)-cal_nutrition.getIndex(index)>0.01f){
+		while(standard.getIndex(index)*(target.getIndex(index))>cal_nutrition.getIndex(index)){
 			List<Nutrition> temp = new ArrayList<Nutrition>(nutrition);
 			Collections.sort(temp,new SortByPercent2MaxAsc());
 			param = temp.get(0).getIndex();
@@ -686,7 +692,7 @@ public class Algorithm implements Balance{
 		calNutrition(true);		
 		Date t2 = new Date();
 		Integer n1=step.size();
-		System.out.println("step 1 total "+n1 + "steps cost=" +(t2.getTime()-t1.getTime())+"ms");
+
 		System.out.println("=====================step 2 add=============================");
 		initTargerReach();
 		Collections.sort(nutrition,new SortByPercent2TargetDesc());
@@ -701,31 +707,32 @@ public class Algorithm implements Balance{
 		//printMenu();
 		Date t3 = new Date();
 		Integer n2=step.size();
-		System.out.println("step 2 total "+ (n2-n1) + "steps  cost=" +(t3.getTime()-t2.getTime())+"ms");
+
 		System.out.println("=====================step 3 energy cost==========================");
 		reinitTargerReach();
-		balanceEnergy();
+		balanceEnergy(new ArrayList<Food>());
 		System.out.println("=====================step 3 end==========================");
 		calNutrition(true);
 		Date t4 = new Date();
 		Integer n3=step.size();
-		System.out.println("step 3 total "+ (n3-n2) + "steps  cost=" +(t4.getTime()-t3.getTime())+"ms");
+
 		System.out.println("=====================step 4 balance==========================");
 		balanceDays();
 		System.out.println("=====================step 4 end==========================");
 		calNutrition(true);
 		Date t5 = new Date();
 		Integer n4=step.size();
-		System.out.println("step 4 total "+ (n4-n3) + "steps  cost=" +(t5.getTime()-t4.getTime())+"ms");
+		System.out.println("step 1 total "+ n1 + " steps  cost=" +(t2.getTime()-t1.getTime())+"ms");
+		System.out.println("step 2 total "+ (n2-n1) + " steps  cost=" +(t3.getTime()-t2.getTime())+"ms");
+		System.out.println("step 3 total "+ (n3-n2) + " steps  cost=" +(t4.getTime()-t3.getTime())+"ms");
+		System.out.println("step 4 total "+ (n4-n3) + " steps  cost=" +(t5.getTime()-t4.getTime())+"ms");
 		return this.food;
 	}
-	private void balanceReduce(Integer index){
-		Collections.sort(nutrition,new SortByPercent2TargetAsc());
-		Nutrition n = nutrition.get(0);
-		sortFood(index,n.getIndex(),Define.ORDER_DESC);
+	
+	private void balanceReduce(Integer index,List<Food> except){
+		Collections.sort(food,new SortByParamEnergy(Define.ORDER_DESC,index));
 		Boolean isReduced = false;
 		Boolean[] feedback = {false,false,false,false,false,false,false,false,false,false,false};
-		List<Food> except = new ArrayList<Food>();
 		for(Food f:food){
 			Boolean canReduce = true;
 			if(!f.getIsAdjustable()){
@@ -741,17 +748,29 @@ public class Algorithm implements Balance{
 				continue;
 			}
 			if(index==Define.PROTEIN){
-				if(f.getProtein()<(f.getFat()*9/4)||f.getProtein()<f.getCarbohydrate()){
+				Float all = (cal_nutrition.getProtein()-f.getProtein()*f.getFoodPart()/10000)*4
+						+(cal_nutrition.getFat()-f.getFat()*f.getFoodPart()/10000)*9
+						+(cal_nutrition.getCarbohydrate()-f.getCarbohydrate()*f.getFoodPart()/10000)*4;
+				Float fp = (cal_nutrition.getProtein()-f.getProtein()*f.getFoodPart()/10000)*4/all;
+				if(fp>protein_per){
 					canReduce= false;
 					continue;
 				}
 			}else if(index==Define.FAT){
-				if(f.getFat()<(f.getProtein()*4/9)||(f.getFat()<f.getCarbohydrate()*4/9)){
+				Float all = (cal_nutrition.getProtein()-f.getProtein()*f.getFoodPart()/10000)*4
+						+(cal_nutrition.getFat()-f.getFat()*f.getFoodPart()/10000)*9
+						+(cal_nutrition.getCarbohydrate()-f.getCarbohydrate()*f.getFoodPart()/10000)*4;
+				Float fp = (cal_nutrition.getFat()-f.getFat()*f.getFoodPart()/10000)*9/all;
+				if(fp>fat_per){
 					canReduce= false;
 					continue;
 				}
 			}else if(index==Define.CARBOHYDRATE){
-				if(f.getCarbohydrate()<(f.getFat()*9/4)||f.getCarbohydrate()<f.getProtein()){
+				Float all = (cal_nutrition.getProtein()-f.getProtein()*f.getFoodPart()/10000)*4
+						+(cal_nutrition.getFat()-f.getFat()*f.getFoodPart()/10000)*9
+						+(cal_nutrition.getCarbohydrate()-f.getCarbohydrate()*f.getFoodPart()/10000)*4;
+				Float fp = (cal_nutrition.getCarbohydrate()-f.getCarbohydrate()*f.getFoodPart()/10000)*4/all;
+				if(fp>carbohydrate_per){
 					canReduce= false;
 					continue;
 				}
@@ -773,7 +792,14 @@ public class Algorithm implements Balance{
 				r.setFood(f);
 				r.setProcess(3);
 				step.add(r);
-				except.add(f);
+				System.out.println(r.toString());
+				Boolean isExcepted=false;
+				for(Food e:except){
+					if(f.getId()==e.getId())
+						isExcepted = true;
+				}
+				if(!isExcepted)
+					except.add(f);
 				Float[] new_ = calNutrition(false).clone();
 				for(int i =0;i<Define.NUM;i++){
 					gReachTarget.setIndexSum(i,f.getIndex(i)*f.getFoodPart()/10000);
@@ -801,16 +827,14 @@ public class Algorithm implements Balance{
 					return;
 				}
 			}
-			balanceEnergy();
+			balanceEnergy(except);
 		}else{
 			System.out.println("no food cannot reduce index"+index);
 		}
 	}
 	
-	private void balanceAdd(Integer index){
-		Collections.sort(nutrition,new SortByPercent2MaxAsc());
-		Nutrition n = nutrition.get(0);
-		sortFood(index,n.getIndex(),Define.ORDER_DESC);
+	private void balanceAdd(Integer index,List<Food> except){
+		Collections.sort(food,new SortByParamEnergy(Define.ORDER_DESC,index));
 		Boolean isAdded = false;
 		for(Food f:food){
 			Boolean canAdd = true;
@@ -826,18 +850,39 @@ public class Algorithm implements Balance{
 				canAdd = false;
 				continue;
 			}
+			Iterator<Food> efood = except.iterator();
+			Food e = new Food();
+			while(efood.hasNext()){
+				e = efood.next();
+				if(f.getFoodId()==e.getFoodId()){
+					canAdd = false;
+					continue;
+				}
+			}
 			if(index==Define.PROTEIN){
-				if(f.getProtein()<(f.getFat()*9/4)||f.getProtein()<f.getCarbohydrate()){
+				Float all = (cal_nutrition.getProtein()+f.getProtein()*f.getFoodPart()/10000)*4
+						+(cal_nutrition.getFat()+f.getFat()*f.getFoodPart()/10000)*9
+						+(cal_nutrition.getCarbohydrate()+f.getCarbohydrate()*f.getFoodPart()/10000)*4;
+				Float fp = (cal_nutrition.getProtein()+f.getProtein()*f.getFoodPart()/10000)*4/all;
+				if(fp<protein_per){
 					canAdd= false;
 					continue;
 				}
 			}else if(index==Define.FAT){
-				if(f.getFat()<(f.getProtein()*4/9)||(f.getFat()<f.getCarbohydrate()*4/9)){
+				Float all = (cal_nutrition.getProtein()+f.getProtein()*f.getFoodPart()/10000)*4
+						+(cal_nutrition.getFat()+f.getFat()*f.getFoodPart()/10000)*9
+						+(cal_nutrition.getCarbohydrate()+f.getCarbohydrate()*f.getFoodPart()/10000)*4;
+				Float fp = (cal_nutrition.getFat()+f.getFat()*f.getFoodPart()/10000)*9/all;
+				if(fp<fat_per){
 					canAdd= false;
 					continue;
 				}
 			}else if(index==Define.CARBOHYDRATE){
-				if(f.getCarbohydrate()<(f.getFat()*9/4)||f.getCarbohydrate()<f.getProtein()){
+				Float all = (cal_nutrition.getProtein()+f.getProtein()*f.getFoodPart()/10000)*4
+						+(cal_nutrition.getFat()+f.getFat()*f.getFoodPart()/10000)*9
+						+(cal_nutrition.getCarbohydrate()+f.getCarbohydrate()*f.getFoodPart()/10000)*4;
+				Float fp = (cal_nutrition.getCarbohydrate()+f.getCarbohydrate()*f.getFoodPart()/10000)*4/all;
+				if(fp<carbohydrate_per){
 					canAdd= false;
 					continue;
 				}
@@ -864,7 +909,7 @@ public class Algorithm implements Balance{
 				r.setFood(f);
 				r.setProcess(3);
 				step.add(r);
-				//System.out.println(r.toString());
+				System.out.println(r.toString());
 				for(int i =0;i<Define.NUM;i++){
 					gReachTarget.setIndexSum(i,-f.getIndex(i)*f.getFoodPart()/10000);
 				}
@@ -873,16 +918,20 @@ public class Algorithm implements Balance{
 			}
 		}
 		if(isAdded){
-			balanceEnergy();
+			balanceEnergy(except);
 		}else{
-			System.out.println("no food cannot add index"+index);
+			System.out.println("no food cannot add index "+index);
 		}
 	}
 	
-	private void balanceEnergy() {
+	private void balanceEnergy(List<Food> except) {
 		if(this.protein_per>Define.ENERGY_PROTEIN_DOWN&&this.protein_per<Define.ENERGY_PROTEIN_UP
 				&&this.fat_per>Define.ENERGY_FAT_DOWN&&this.fat_per<Define.ENERGY_FAT_UP
 				&&this.carbohydrate_per>Define.ENERGY_CARBOHYDRATE_DOWN&&this.carbohydrate_per<Define.ENERGY_CARBOHYDRATE_UP){
+			return;
+		}
+		if(except.size()==food.size()){
+			System.out.println("no more food");
 			return;
 		}
 		System.out.println("protein     :" + this.protein_per*100+"%");
@@ -895,32 +944,32 @@ public class Algorithm implements Balance{
 					assert(false);
 				}else if(this.carbohydrate_per<Define.ENERGY_CARBOHYDRATE_DOWN){
 					System.out.println("add CARBOHYDRATE");
-					balanceAdd(Define.CARBOHYDRATE);
+					balanceAdd(Define.CARBOHYDRATE,except);
 				}else{
 					System.out.println("add CARBOHYDRATE");
-					balanceAdd(Define.CARBOHYDRATE);
+					balanceAdd(Define.CARBOHYDRATE,except);
 				}
 			}else if(this.fat_per<Define.ENERGY_FAT_DOWN){
 				if(this.carbohydrate_per>Define.ENERGY_CARBOHYDRATE_UP){
 					System.out.println("add FAT");
-					balanceAdd(Define.FAT);
+					balanceAdd(Define.FAT,except);
 				}else if(this.carbohydrate_per<Define.ENERGY_CARBOHYDRATE_DOWN){
 					System.out.println("reduce PROTEIN");
-					balanceReduce(Define.PROTEIN);
+					balanceReduce(Define.PROTEIN,except);
 				}else{
 					System.out.println("add FAT");
-					balanceAdd(Define.FAT);
+					balanceAdd(Define.FAT,except);
 				}
 			}else{
 				if(this.carbohydrate_per>Define.ENERGY_CARBOHYDRATE_UP){
 					System.out.println("add FAT");
-					balanceAdd(Define.FAT);
+					balanceAdd(Define.FAT,except);
 				}else if(this.carbohydrate_per<Define.ENERGY_CARBOHYDRATE_DOWN){
 					System.out.println("add CARBOHYDRATE");
-					balanceAdd(Define.CARBOHYDRATE);
+					balanceAdd(Define.CARBOHYDRATE,except);
 				}else{
 					System.out.println("reduce PROTEIN");
-					balanceReduce(Define.PROTEIN);
+					balanceReduce(Define.PROTEIN,except);
 				}
 			}
 
@@ -928,66 +977,66 @@ public class Algorithm implements Balance{
 			if(this.fat_per>Define.ENERGY_FAT_UP){
 				if(this.carbohydrate_per>Define.ENERGY_CARBOHYDRATE_UP){
 					System.out.println("add PROTEIN");
-					balanceAdd(Define.PROTEIN);
+					balanceAdd(Define.PROTEIN,except);
 				}else if(this.carbohydrate_per<Define.ENERGY_CARBOHYDRATE_DOWN){
 					System.out.println("reduce FAT");
-					balanceReduce(Define.FAT);
+					balanceReduce(Define.FAT,except);
 				}else{
 					System.out.println("add PROTEIN");
-					balanceAdd(Define.PROTEIN);
+					balanceAdd(Define.PROTEIN,except);
 				}
 			}else if(this.fat_per<Define.ENERGY_FAT_DOWN){
 				if(this.carbohydrate_per>Define.ENERGY_CARBOHYDRATE_UP){
 					System.out.println("reduce CARBOHYDRATE");
-					balanceReduce(Define.CARBOHYDRATE);
+					balanceReduce(Define.CARBOHYDRATE,except);
 				}else if(this.carbohydrate_per<Define.ENERGY_CARBOHYDRATE_DOWN){
 					assert(false);
 				}else{
 					System.out.println("reduce CARBOHYDRATE");
-					balanceReduce(Define.CARBOHYDRATE);
+					balanceReduce(Define.CARBOHYDRATE,except);
 				}
 			}else{
 				if(this.carbohydrate_per>Define.ENERGY_CARBOHYDRATE_UP){
 					System.out.println("add PROTEIN");
-					balanceAdd(Define.PROTEIN);
+					balanceAdd(Define.PROTEIN,except);
 				}else if(this.carbohydrate_per<Define.ENERGY_CARBOHYDRATE_DOWN){
 					System.out.println("reduce FAT");
-					balanceReduce(Define.FAT);
+					balanceReduce(Define.FAT,except);
 				}else{
 					System.out.println("add PROTEIN");
-					balanceAdd(Define.PROTEIN);
+					balanceAdd(Define.PROTEIN,except);
 				}
 			}
 		}else{
 			if(this.fat_per>Define.ENERGY_FAT_UP){
 				if(this.carbohydrate_per>Define.ENERGY_CARBOHYDRATE_UP){
 					System.out.println("add PROTEIN");
-					balanceAdd(Define.PROTEIN);
+					balanceAdd(Define.PROTEIN,except);
 				}else if(this.carbohydrate_per<Define.ENERGY_CARBOHYDRATE_DOWN){
 					System.out.println("add CARBOHYDRATE");
-					balanceAdd(Define.CARBOHYDRATE);
+					balanceAdd(Define.CARBOHYDRATE,except);
 				}else{
 					System.out.println("reduce FAT");
-					balanceReduce(Define.FAT);
+					balanceReduce(Define.FAT,except);
 				}
 			}else if(this.fat_per<Define.ENERGY_FAT_DOWN){
 				if(this.carbohydrate_per>Define.ENERGY_CARBOHYDRATE_UP){
 					System.out.println("add FAT");
-					balanceAdd(Define.FAT);
+					balanceAdd(Define.FAT,except);
 				}else if(this.carbohydrate_per<Define.ENERGY_CARBOHYDRATE_DOWN){
 					System.out.println("reduce PROTEIN");
-					balanceReduce(Define.PROTEIN);
+					balanceReduce(Define.PROTEIN,except);
 				}else{
 					System.out.println("add FAT");
-					balanceAdd(Define.FAT);
+					balanceAdd(Define.FAT,except);
 				}
 			}else{
 				if(this.carbohydrate_per>Define.ENERGY_CARBOHYDRATE_UP){
 					System.out.println("reduce CARBOHYDRATE");
-					balanceReduce(Define.CARBOHYDRATE);
+					balanceReduce(Define.CARBOHYDRATE,except);
 				}else if(this.carbohydrate_per<Define.ENERGY_CARBOHYDRATE_DOWN){
 					System.out.println("add CARBOHYDRATE");
-					balanceAdd(Define.CARBOHYDRATE);
+					balanceAdd(Define.CARBOHYDRATE,except);
 				}else{
 					return;
 				}

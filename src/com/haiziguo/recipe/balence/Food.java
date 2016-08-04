@@ -1,5 +1,7 @@
 package com.haiziguo.recipe.balence;
 
+import com.haiziguo.recipe.util.Define;
+
 public class Food {
 	private Integer id;
     private Integer day;
@@ -121,7 +123,7 @@ public class Food {
     	this.foodId = foodId;
     	this.gram = gram;
     	this.setFoodPart(foodPart);
-    	this.setAdd_gram(gram<<1);
+    	this.setAdd_gram(((gram<Define.ADD_UP_ALL)?(gram<<1):(gram+Define.ADD_UP_ALL)));
     	this.setReduce_gram(gram>>1);
     	this.isAdjustable = isAdjustable;
     	this.energy = energy;
