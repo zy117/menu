@@ -1,5 +1,8 @@
 package com.haiziguo.recipe.util;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public interface Define {
 	public final static Integer NUM = 11;
 	
@@ -33,7 +36,7 @@ public interface Define {
 	public final static Integer[] ENERGY_LOW = {1,2,4,6};
 	public final static Float ENERGY_HIGH_PER = 0.500001f;
 	
-	public final static Float ENERGY_BALANCE_REMAIN=0.05f;
+	public final static Float ENERGY_BALANCE_REMAIN=0f;
 	
 	public final static Float ENERGY_PROTEIN_UP = 0.15f;
 	public final static Float ENERGY_PROTEIN_DOWN = 0.125f;
@@ -54,6 +57,12 @@ public interface Define {
 	public final static Integer FOOD_CAKE = 9;
 	public final static Integer FOOD_OTHERS = 10;
 	
+	public final static Set<Integer> CANNOT_ADD_OR_REDUCE = new HashSet<Integer>(){/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+	{add(21);add(22);add(23);add(24);}};
 	public final static Boolean ORDER_ASC = true;
 	public final static Boolean ORDER_DESC = false;
 	
@@ -68,7 +77,7 @@ public interface Define {
 	
 	public final static Float [] DEFAULT_TARGET = {0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f};
 	public final static Float [] DEFAULT_TARGET_MAX = {1.0f,1.0f,1.0f,1.0f,2.0f,2.0f,2.0f,2.0f,2.0f,2.0f,2.0f};
-	public final static Float [] DEFAULT_TARGET_OVER_SHIFT = {0.1f,0.1f,0.1f,0.1f,0.6f,0.6f,0.6f,0.6f,0.6f,0.6f,0.6f};
+	public final static Float [] DEFAULT_TARGET_OVER_SHIFT = {0.10f,0.10f,0.10f,0.10f,0.6f,0.6f,0.6f,0.6f,0.6f,0.6f,0.6f};
 	public final static Float [] DEFAULT_TARGET_MAX_SHIFT = {0.2f,0.2f,0.2f,0.2f,1.2f,1.2f,1.2f,1.2f,1.2f,1.2f,1.2f};
 	
 }

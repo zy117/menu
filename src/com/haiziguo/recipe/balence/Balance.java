@@ -1,6 +1,7 @@
 package com.haiziguo.recipe.balence;
 
 import java.util.List;
+import java.util.Map;
 
 public interface Balance {
 	
@@ -17,4 +18,6 @@ public interface Balance {
 	public List<BalanceStep> getSteps();
 	
 	public void printMenu();
+	
+	public Map<Integer,Integer> getResultsMap();
 }

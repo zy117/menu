@@ -73,6 +73,42 @@ public class Food {
     	
     }
     
+    public Food(Integer id, Object[] obj 
+    		){
+    	this.id = id;
+    	this.day = Integer.parseInt(((java.sql.Timestamp)obj[0]).toString().substring(8, 10).trim());
+    	this.meal = (Integer)obj[1];
+    	this.menuName = (String)obj[2];
+    	this.menuId = (Integer)obj[5];
+    	this.foodName = (String)obj[3];
+    	this.foodId = (Integer)obj[6];
+    	this.gram = ((Double)obj[4]).intValue();
+    	this.setFoodPart((Integer)obj[8]);
+    	this.setAdd_gram(((gram<Define.ADD_UP_ALL)?(gram<<1):(gram+Define.ADD_UP_ALL)));
+    	this.setReduce_gram(gram>>1);
+
+    	this.isAdjustable = true;
+    	this.energy = ((Double)obj[9]).floatValue();
+    	this.protein = ((Double)obj[10]).floatValue();
+    	this.fat = ((Double)obj[11]).floatValue();
+    	this.carbohydrate = ((Double)obj[12]).floatValue();
+    	this.ca = ((Double)obj[13]).floatValue();
+    	this.fe = ((Double)obj[14]).floatValue();
+    	this.zn = ((Double)obj[15]).floatValue();
+    	this.va = ((Double)obj[16]).floatValue();
+    	this.vb1 = ((Double)obj[17]).floatValue();
+    	this.vb2 = ((Double)obj[18]).floatValue();
+    	this.vc = ((Double)obj[19]).floatValue();
+    	this.ve = ((Double)obj[20]).floatValue();
+    	this.na = ((Double)obj[21]).floatValue();
+    	this.type1 = (Integer)obj[22];
+    	this.type3 = (Integer)obj[23];
+    	if(Define.CANNOT_ADD_OR_REDUCE.contains(obj[24])){
+    		this.isAdjustable = false;
+    	}else{
+    		this.isAdjustable = true;
+    	}
+    }
     /**
      * @author zhangy@mywayinfo.com
      * @version 0.0.1
@@ -87,6 +123,8 @@ public class Food {
      * @param vb1 维生素B1，单位（毫克/100g)
      * @param vb2 维生素B2，单位（毫克/100g)
      * @param vc 维生素C，单位（克/100g)
+     * @param ve 维生素E，单位（/100g）
+     * @param na 钠，单位（/100g）
      * 
      */
     public Food(
@@ -162,10 +200,12 @@ public class Food {
     			+ "ca:"+ca+","
     			+ "fe:"+fe+","
     			+ "zn:"+zn+","
+    			+ "na:"+na+","
     			+ "va:"+va+","
     			+ "vb1:"+vb1+","
     			+ "vb2:"+vb2+","
     			+ "vc:"+vc+","
+    			+ "ve:"+ve+","
     			+ "}";
     }
     
@@ -194,6 +234,9 @@ public class Food {
 		this.foodName = foodName;
 	}
 	public Integer getGram() {
+		if(gram<1){
+			return 1;
+		}
 		return gram;
 	}
 	public void setGram(Integer gram) {
@@ -291,6 +334,9 @@ public class Food {
 	}
 
 	public Integer getAdd_gram() {
+		if(add_gram<1){
+			return 1;
+		}
 		return add_gram;
 	}
 
@@ -299,6 +345,9 @@ public class Food {
 	}
 
 	public Integer getReduce_gram() {
+		if(reduce_gram<1){
+			return 1;
+		}
 		return reduce_gram;
 	}
 

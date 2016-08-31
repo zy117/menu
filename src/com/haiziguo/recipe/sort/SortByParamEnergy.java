@@ -17,8 +17,8 @@ public class SortByParamEnergy implements Comparator<Object> {
 	 public int compare(Object o1, Object o2) {
 		 Food s1 = (Food) o1;
 		 Food s2 = (Food) o2;
-		 Float f1 = 0.0f;
-		 Float f2 =	0.0f;
+		 Float f1 = 0.00f;
+		 Float f2 =	0.00f;
 		 switch(param){
 		 case 1:
 			 f1 = (s1.getProtein()*4)/(s1.getProtein()*4+s1.getFat()*9+s1.getCarbohydrate()*4);
