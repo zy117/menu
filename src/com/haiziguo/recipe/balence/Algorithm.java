@@ -12,9 +12,11 @@ import java.util.Set;
 
 import com.haiziguo.recipe.sort.*;
 import com.haiziguo.recipe.util.Define;
+import com.haiziguo.recipe.util.Logger;
 
 public class Algorithm implements Balance{
 
+	private Logger logger = new Logger();
 	private Params cal_nutrition = new Params();
 	private Params cal_nutrition_percent = new Params();	
 	
@@ -67,7 +69,7 @@ public class Algorithm implements Balance{
 		}
 		days = day.size();
 		meals = meal.size();
-		System.out.println("banlance "+days+" days "+meals+" meals/day menu!");	
+		logger.info("banlance "+days+" days "+meals+" meals/day menu!");
 		type.plusDaysAndMeals(days, 1.0f);
 		this.isFoodInited = true;
 		Nutrition ENERGY = new Nutrition(Define.ENERGY,cal_nutrition_percent.getIndex(Define.ENERGY));
@@ -92,13 +94,13 @@ public class Algorithm implements Balance{
 		nutrition.add(VB2);
 		Nutrition VC = new Nutrition(Define.VC,cal_nutrition_percent.getIndex(Define.VC));
 		nutrition.add(VC);
-		System.out.println(type.toString());
+		logger.info(type.toString());
 	}
 		
 	public void printMenu(){
 		Collections.sort(food,new SortById());
 		for (Food f:food){
-			System.out.println(f.toMenu());
+			logger.info(f.toMenu());
 		}
 	}
     /**
@@ -109,29 +111,30 @@ public class Algorithm implements Balance{
      */
 	public void setStandard(Float [] nutrition){
 		if(nutrition ==null){
-			System.out.println("SetStandard error!nutrition null");
+			logger.error("SetStandard error!nutrition null");
 			return;
 		}
 		if(nutrition.length!=Define.NUM){
-			System.out.println("SetStandard error!length < "+Define.NUM);
+			logger.error("SetStandard error!length < "+Define.NUM);
 			return;
 		}
 		for(Integer index = 0;index < nutrition.length;index++ ){
 			standard.setIndex(index, nutrition[index]);
 		}
-		System.out.println("standard:"+standard.toString());	
+		logger.info("standard:"+standard.toString());
+
 		Float energy_all = standard.getIndex(Define.PROTEIN)*4+standard.getIndex(Define.FAT)*9+standard.getIndex(Define.CARBOHYDRATE)*4;
 		Float protein_per = standard.getIndex(Define.PROTEIN)*4/energy_all;
 		Float fat_per = standard.getIndex(Define.FAT)*9/energy_all;
 		Float carbohydrate_per = standard.getIndex(Define.CARBOHYDRATE)*4/energy_all;
 		if(protein_per.compareTo(Define.ENERGY_PROTEIN_UP)>0||protein_per.compareTo(Define.ENERGY_PROTEIN_DOWN)<0){
-			System.out.println("WARNING:  STANDARD PROTEIN      IS NOT GOOD: protein:" + protein_per*100+"%, fat:"+fat_per*100+"%, carbohydrate:"+carbohydrate_per*100+"%");
+			logger.warn("WARNING:  STANDARD PROTEIN      IS NOT GOOD: protein:" + protein_per*100+"%, fat:"+fat_per*100+"%, carbohydrate:"+carbohydrate_per*100+"%");
 		}
 		if(fat_per.compareTo(Define.ENERGY_FAT_UP)>0||fat_per.compareTo(Define.ENERGY_FAT_DOWN)<0){
-			System.out.println("WARNING:  STANDARD FAT          IS NOT GOOD: protein:" + protein_per*100+"%, fat:"+fat_per*100+"%, carbohydrate:"+carbohydrate_per*100+"%");
+			logger.warn("WARNING:  STANDARD FAT          IS NOT GOOD: protein:" + protein_per*100+"%, fat:"+fat_per*100+"%, carbohydrate:"+carbohydrate_per*100+"%");
 		}
 		if(carbohydrate_per.compareTo(Define.ENERGY_CARBOHYDRATE_UP)>0||carbohydrate_per.compareTo(Define.ENERGY_CARBOHYDRATE_DOWN)<0){
-			System.out.println("WARNING:  STANDARD CARBOHYDRATE IS NOT GOOD: protein:" + protein_per*100+"%, fat:"+fat_per*100+"%, carbohydrate:"+carbohydrate_per*100+"%");
+			logger.warn("WARNING:  STANDARD CARBOHYDRATE IS NOT GOOD: protein:" + protein_per*100+"%, fat:"+fat_per*100+"%, carbohydrate:"+carbohydrate_per*100+"%");
 		}
 		
 		this.isStandardSet = true;
@@ -147,7 +150,7 @@ public class Algorithm implements Balance{
 					per = 2;
 				}else{
 					per = (int) (temp.getIndex(i)/standard.getIndex(i)*target.getIndex(i))+2;
-					System.out.println("index "+i+" set "+f.getFoodName()+" per = "+per);
+					logger.info("index "+i+" set "+f.getFoodName()+" per = "+per);
 					f.setAdd_gram(f.getGram());
 				}
 			}
@@ -168,25 +171,27 @@ public class Algorithm implements Balance{
 					good_protein += f.getGram()*f.getFoodPart()*f.getProtein()/10000;
 				}
 			}
-			type.setTypeCurSelfAdd(f.getType1(), ((float)(f.getGram()*f.getFoodPart()/100)));
+			if(Define.FOOD_NULL<f.getType1()&&f.getType1()<Define.FOOD_INVALID){
+				type.setTypeCurSelfAdd(f.getType1(), ((float)(f.getGram()*f.getFoodPart()/100)));
+			}
 		}
 		if(debug){
-			System.out.println("menu list cal_nutrition:" + cal_nutrition.toString());
-			System.out.println(type.toString());
+			logger.info("menu list cal_nutrition:" + cal_nutrition.toString());
+			logger.info(type.toString());
 		}
 		Float energy_all = cal_nutrition.getIndex(Define.PROTEIN)*4+cal_nutrition.getIndex(Define.FAT)*9+cal_nutrition.getIndex(Define.CARBOHYDRATE)*4;
 		this.protein_per = cal_nutrition.getIndex(Define.PROTEIN)*4/energy_all;
 		this.fat_per = cal_nutrition.getIndex(Define.FAT)*9/energy_all;
 		this.carbohydrate_per = cal_nutrition.getIndex(Define.CARBOHYDRATE)*4/energy_all;
 		if(debug){
-			System.out.println("energy_all  :" + energy_all);
-			System.out.println("protein     :" + this.protein_per*100+"%");
-			System.out.println("fat         :" + this.fat_per*100+"%");
-			System.out.println("carbohydrate:" + this.carbohydrate_per*100+"%");
+			logger.info("energy_all  :" + energy_all);
+			logger.info("protein     :" + this.protein_per*100+"%");
+			logger.info("fat         :" + this.fat_per*100+"%");
+			logger.info("carbohydrate:" + this.carbohydrate_per*100+"%");
 		}
 		checkhighproteinprecent = good_protein/cal_nutrition.getIndex(Define.PROTEIN);
 		if(debug){
-			System.out.println("high protein:"+checkhighproteinprecent*100+"%");
+			logger.info("high protein:"+checkhighproteinprecent*100+"%");
 		}
 		calNutritionPercent(debug);
 		return cal_nutrition.toFloatArray();
@@ -197,7 +202,7 @@ public class Algorithm implements Balance{
 			cal_nutrition_percent.setIndex(i, 100*cal_nutrition.getIndex(i)/standard.getIndex(i));
 		}
 		if(debug){
-			System.out.println("menu list cal_nutrition_percent:"+cal_nutrition_percent.toStringPer());
+			logger.info("menu list cal_nutrition_percent:"+cal_nutrition_percent.toStringPer());
 		}
 
 		for(Nutrition n:nutrition){
@@ -217,12 +222,11 @@ public class Algorithm implements Balance{
      */
 	public void setBalanceTarget(Float [] target){
 		if(target.length!=Define.NUM){
-			System.out.println("setBalanceTarget error!length < "+Define.NUM);
+			logger.error("setBalanceTarget error!length < "+Define.NUM);
 			return;
 		}
 		this.target = new Params(target);
-		System.out.println("target:"+this.target.toStringPer100());
-		
+		logger.info("target:"+this.target.toStringPer100());
 		this.isTargetSet = true;
 	}
 	
@@ -234,14 +238,14 @@ public class Algorithm implements Balance{
      */
 	public void setBalanceTargetMax(Float [] target_max){
 		if(target_max.length!=Define.NUM){
-			System.out.println("setBalanceTarget error!length < "+Define.NUM);
+			logger.error("setBalanceTarget error!length < "+Define.NUM);
 			return;
 		}
 		this.target_max = new Params(target_max);
 		this.target_max_shift = this.target_max.minusParams(this.target);
 		this.target_over_shift = this.target_max_shift.plusFloat(0.5f);
-		System.out.println("max_shift:"+this.target_max_shift.toStringPer100());
-		System.out.println("over_shift:"+this.target_over_shift.toStringPer100());
+		logger.info("max_shift:"+this.target_max_shift.toStringPer100());
+		logger.info("over_shift:"+this.target_over_shift.toStringPer100());
 		this.isTargetSet = true;
 	}
     /**
@@ -303,7 +307,7 @@ public class Algorithm implements Balance{
 		List<Nutrition> temp = new ArrayList<Nutrition>(nutrition);
 		Collections.sort(temp,new SortByPercent2OverAsc());
 		Integer param = temp.get(0).getIndex();
-		System.out.println("reduce index = " + index + ", param = "+ param);
+		logger.info("reduce index = " + index + ", param = "+ param);
 		boolean isEnd = false;
 		sortFood(index,param,Define.ORDER_DESC);
 		for(Food f:food){
@@ -328,12 +332,12 @@ public class Algorithm implements Balance{
 				r.setFood(f);
 				r.setProcess(1);
 				step.add(r);
-				//System.out.println(r.toString());
+				logger.debug(r.toString());
 				for(int j =0;j<Define.NUM;j++){
 					gOverTarget.setIndexSum(j, -f.getIndex(j)*f.getFoodPart()/10000);
 				}
 				if(gOverTarget.getIndex(index)<0.0f){
-					System.out.println("reduce index "+index+" end!");
+					logger.info("reduce index "+index+" end!");
 					isEnd = true;
 					break;
 				}
@@ -347,7 +351,7 @@ public class Algorithm implements Balance{
 	
 	private void addFood(Integer index, List<Food> except){
 		if(except.size() == food.size()){
-			System.out.println("except full no more food for add");
+			logger.info("except full no more food for add");
 			return;
 		}
 		Integer param = 0;
@@ -356,7 +360,7 @@ public class Algorithm implements Balance{
 			List<Nutrition> temp = new ArrayList<Nutrition>(nutrition);
 			Collections.sort(temp,new SortByPercent2MaxAsc());
 			param = temp.get(0).getIndex();
-			//System.out.println("add index = " + index + ", param = "+ param);
+			logger.debug("add index = " + index + ", param = "+ param);
 			sortFood(index,param,Define.ORDER_DESC);
 			Iterator<Food> ifood = food.iterator();
 			Food f = new Food();
@@ -402,7 +406,7 @@ public class Algorithm implements Balance{
 					r.setFood(f);
 					r.setProcess(2);
 					step.add(r);
-					//System.out.println(r.toString());
+					logger.debug(r.toString());
 					for(int i =0;i<Define.NUM;i++){
 						gReachTarget.setIndexSum(i,-f.getIndex(i)*f.getFoodPart()/10000);
 					}
@@ -411,12 +415,12 @@ public class Algorithm implements Balance{
 				}
 			}
 			if(!isAdded){
-				System.out.println(" index "+index+" no more food add, "+ param+" reach max!");
+				logger.info(" index "+index+" no more food add, "+ param+" reach max!");
 				break outter;
 			}
 		}
 		if(standard.getIndex(index)*target.getIndex(index)<cal_nutrition.getIndex(index)){
-			System.out.println(" add index "+index+" end:"+standard.getIndex(index)+"*"+target.getIndex(index)+"<"+cal_nutrition.getIndex(index));
+			logger.info(" add index "+index+" end:"+standard.getIndex(index)+"*"+target.getIndex(index)+"<"+cal_nutrition.getIndex(index));
 		}else{
 			sortFood(param,index,Define.ORDER_DESC);
 			Boolean[] feedback = {false,false,false,false,false,false,false,false,false,false,false};
@@ -458,11 +462,11 @@ public class Algorithm implements Balance{
 					for(Integer i=0;i<Define.REDUCE_STEP;i++){
 						step.add(r);
 					}
-					//System.out.println(r.toString());
+					logger.debug(r.toString());
 					Float[] new_ = calNutrition(false).clone();
 					for(int i =0;i<Define.NUM;i++){
 						gReachTarget.setIndexSum(i, Define.REDUCE_STEP*f.getIndex(i)*f.getFoodPart()/10000);
-						//System.out.println("target:"+standard.getIndex(i)*target.getIndex(index)+":old:"+old_[i]+":new:"+new_[i]);
+						logger.debug("target:"+standard.getIndex(i)*target.getIndex(index)+":old:"+old_[i]+":new:"+new_[i]);
 						if(new_[i]<standard.getIndex(i)*target.getIndex(i)&&old_[i]>standard.getIndex(i)*target.getIndex(i)){
 							feedback[i] = true;
 						}else{
@@ -481,14 +485,14 @@ public class Algorithm implements Balance{
 				}
 			}
 			if(!isReduced){
-				System.out.println("no more food to reduce!for index"+index + ":param "+param);
+				logger.info("no more food to reduce!for index"+index + ":param "+param);
 				return;
 			}
 			calNutrition(false);
 			addFood(index,except);
 			for(int i=0;i<Define.NUM;i++){
 				if(feedback[i]&&i!=index){
-					System.out.println("index "+index+" feed back add index "+i);
+					logger.info("index "+index+" feed back add index "+i);
 					addFood(i,except);
 				}
 			}
@@ -499,19 +503,20 @@ public class Algorithm implements Balance{
 		for(int i=0;i<Define.NUM;i++){
 			gOverTarget.setIndex(i, cal_nutrition.getIndex(i)-standard.getIndex(i)*(target.getIndex(i)+target_over_shift.getIndex(i)));
 		}
-		System.out.println("nutrition over gram:"+gOverTarget.toString());
+		logger.info("nutrition over gram:"+gOverTarget.toString());
 	}
 	
 	private void initTargerReach(){
 		for (int i=0;i<Define.NUM;i++){
 				gReachTarget.setIndex(i, standard.getIndex(i)*(target.getIndex(i)+target_max_shift.getIndex(i)-Define.ENERGY_BALANCE_REMAIN)-cal_nutrition.getIndex(i));
 		}
-		System.out.println("nutrition reach gram:"+gReachTarget.toString());
+		logger.info("nutrition reach gram:"+gReachTarget.toString());
 	}
 	private void reinitTargerReach(){
 		for (int i=0;i<Define.NUM;i++){
 				gReachTarget.setIndexSum(i, standard.getIndex(i)*Define.ENERGY_BALANCE_REMAIN);// for energy balance
 		}
+		logger.info("nutrition rereach gram:"+gReachTarget.toString());
 	}
 	
 	private void balanceDays(){
@@ -530,7 +535,7 @@ public class Algorithm implements Balance{
 		Map<Integer,Integer> dayOffset = new HashMap<Integer,Integer>();
 		while(istep.hasNext()){
 			BalanceStep s = istep.next();
-			//System.out.println(s.toString());
+			logger.debug(s.toString());
 			Integer id = s.getFood().getId();
 			Integer day = s.getFood().getDay();
 			if(map.containsKey(id)){
@@ -549,10 +554,10 @@ public class Algorithm implements Balance{
 			}
 			
 		}
-		System.out.println("balance all use "+step.size()+ "steps, involve " +map.size() + " food in list" );
-		System.out.println("gram per day:");
+		logger.info("balance all use "+step.size()+ "steps, involve " +map.size() + " food in list" );
+		logger.info("gram per day:");
 		for(Integer d:dayOffset.keySet()){
-			System.out.println(" day "+ d+" : "+ dayOffset.get(d)+"g");
+			logger.info(" day "+ d+" : "+ dayOffset.get(d)+"g");
 		}
 		Iterator<Integer> imap = map.keySet().iterator();
 		/*
@@ -561,7 +566,7 @@ public class Algorithm implements Balance{
 		Set<Integer> foodidset = new HashSet<Integer>();
 		while(imap.hasNext()){
 			Integer id = imap.next();
-			//System.out.println("id = "+ id+",gram = "+ map.get(id));
+			logger.debug("id = "+ id+",gram = "+ map.get(id));
 			Integer foodid = 0;
 			/*
 			 * lid		HashMap<Integer,Integer>()
@@ -572,20 +577,19 @@ public class Algorithm implements Balance{
 			for(Food f : food){
 				if(f.getId()==id){
 					foodid = f.getFoodId();
-					//System.out.println(f.toMenu());
+					logger.debug(f.toMenu());
 				}
 			}
 			if(foodidset.contains(foodid)){
-				//System.out.println("find same foodid:"+foodid+" id = "+id);
+				logger.debug("find same foodid:"+foodid+" id = "+id);
 				continue;
 			}
 			foodidset.add(foodid);
 			
 			for(Food f : food){
-				//System.out.println(f.toMenu());
 				if(f.getFoodId().compareTo(foodid)==0){
 					lid.put(f.getId(),0);
-					//System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!"+f.toMenu());
+					logger.debug("!!!!!!!!!!!!!!!!!!!!!!!!!!"+f.toMenu());
 				}
 			}
 			/*
@@ -601,10 +605,10 @@ public class Algorithm implements Balance{
 					}
 				}
 			}
-			//System.out.println("foodid in foodlist total ="+lid.size()+" , change grams "+offset);
+			logger.debug("foodid in foodlist total ="+lid.size()+" , change grams "+offset);
 			while(Math.abs(offset)>0){
 				if(lid.size()==0){
-					System.err.println("check no foodlist?but offset remains..."+offset);
+					logger.error("check no foodlist?but offset remains..."+offset);
 					break;
 				}
 				/*
@@ -614,7 +618,7 @@ public class Algorithm implements Balance{
 				Integer balance = offset/lid.size();
 				Integer remain = offset%lid.size();
 				if(lid.size()>1){
-					System.out.println("id "+id + " have same food in list, lid size = "+lid.size()+", offset = "+offset+",every balance add or reduce = "+balance+",remain " + remain);
+					logger.info("id "+id + " have same food in list, lid size = "+lid.size()+", offset = "+offset+",every balance add or reduce = "+balance+",remain " + remain);
 				}
 				/*
 				 * rid 	存放下次无法继续调整，被移除的食谱id
@@ -622,10 +626,10 @@ public class Algorithm implements Balance{
 				List<Integer> rid = new ArrayList<Integer>();
 				for(Integer i:lid.keySet()){
 					Integer lgram = lid.get(i);
-					//System.out.println("i = "+ i+" value = "+ lgram);
+					logger.debug("i = "+ i+" value = "+ lgram);
 					Food f = foodmap.get(i);
 					if(f==null){
-						System.err.println("food  "+i+" can not find!");
+						logger.error("food  "+i+" can not find!");
 						continue;
 					}
 					/*
@@ -640,20 +644,16 @@ public class Algorithm implements Balance{
 						 * 			否则，直接加上balance克数
 						 */
 						Integer bgram = (lgram.compareTo(0)==0)?(f.getGram()-map.get(i)+balance):f.getGram()+balance;
-						//System.out.println(" balance "+i+" food " + f.getFoodName() + " foodid " + f.getFoodId()+" gram = "+f.getGram()+" old= "+map.get(i)+" balance " +balance +" bgram = "+bgram + " lgram = "+lgram);
+						logger.debug(" balance "+i+" food " + f.getFoodName() + " foodid " + f.getFoodId()+" gram = "+f.getGram()+" old= "+map.get(i)+" balance " +balance +" bgram = "+bgram + " lgram = "+lgram);
 						if(f.getReduce_gram()<=bgram&&f.getAdd_gram()>=bgram){
 								f.setGram(bgram);
-								//System.out.println("before"+" offset :"+offset);
 								offset-=balance;
-								//System.out.println("after"+" offset :"+offset);
 								lid.put(i, balance+lgram);//将balance累加进去
 						}else if(f.getReduce_gram()>bgram){
-								//System.out.println("before"+" offset :"+offset);
 								if(lgram.compareTo(0)==0)
 									offset-=(f.getReduce_gram() - (f.getGram()-map.get(i)));
 								else
 									offset-= f.getReduce_gram() - f.getGram();
-								//System.out.println("afters"+" offset :"+offset);
 								f.setGram(f.getReduce_gram());
 								rid.add(i);
 						}else{
@@ -664,9 +664,9 @@ public class Algorithm implements Balance{
 								f.setGram(f.getAdd_gram());
 								rid.add(i);
 						}
-						//System.out.println(f.getGram()+" offset :"+offset);
+						logger.debug(f.getGram()+" offset :"+offset);
 					}else{//食谱保持原始克数
-						//System.out.println(" balance food not modify" + f.getFoodName() + " foodid " + f.getFoodId());
+						logger.debug(" balance food not modify" + f.getFoodName() + " foodid " + f.getFoodId());
 						Integer bgram =f.getGram()+balance;
 						if(f.getReduce_gram()<=bgram&&f.getAdd_gram()>=bgram){
 							f.setGram(bgram);
@@ -681,7 +681,7 @@ public class Algorithm implements Balance{
 							offset-=f.getAdd_gram()-f.getGram();
 							f.setGram(f.getAdd_gram());
 						}
-						//System.out.println(f.getGram()+" offset :"+offset);
+						logger.debug(f.getGram()+" offset :"+offset);
 					}
 					if(balance.compareTo(0)==0||lid.size()==1){
 						if(remain>0){
@@ -699,94 +699,97 @@ public class Algorithm implements Balance{
 					r.setFood(f);
 					r.setProcess(4);
 					if(newg>oldg){
-						//System.out.println("add "+ (newg-oldg));
+						logger.debug("add "+ (newg-oldg));
 						r.setAddOrReduce(Define.ADD_1G);
 					}else if(newg<oldg){
-						//System.out.println("reduce" +(newg-oldg));
+						logger.debug("reduce" +(newg-oldg));
 						r.setAddOrReduce(Define.REDUCE_1G);
 					}
 					for(int n=0;n<Math.abs(newg-oldg);n++){
 						step.add(r);
 					}
-
+					
 					Integer oldoffset = dayOffset.get(f.getDay());
+					if(oldoffset==null){
+						oldoffset = 0;
+					}
 					dayOffset.put(f.getDay(), oldoffset+newg-oldg);				
 				}//end for(Integer i:lid.keySet())
 				if(rid.size()>0){
 					for(Integer r:rid){
 						lid.remove(r);
-						//System.out.println("lid remove "+r);
+						logger.debug("lid remove "+r);
 					}
 				}
 			}//end while
 		}
-		System.out.println("after balance gram per day:");
+		logger.info("after balance gram per day:");
 		for(Integer d:dayOffset.keySet()){
-			System.out.println(" day "+ d+" : "+ dayOffset.get(d)+"g");
+			logger.info(" day "+ d+" : "+ dayOffset.get(d)+"g");
 		}
 	}
 	public List<Food> doBalance(){
 		if(!this.isFoodInited||!this.isStandardSet||!this.isTargetSet){
-			System.out.println("error! not inited, cannot do balance");
+			logger.error("error! not inited, cannot do balance");
 			return null;
 		}
 		Date t1 = new Date();
 		standard.plusDays(days);
 		calNutrition(true);
-		System.out.println("=====================step 1 reduce==========================");
+		logger.info("=====================step 1 reduce==========================");
 		calNutritionPerFood();
 		initTargetOver();		
 		Collections.sort(nutrition,new SortByPercent2OverDesc());
 		for(Nutrition n:nutrition){
 			if(gOverTarget.getIndex(n.getIndex())>0.0f){
-				System.out.println(n.getIndex()+" over "+(target.getIndex(n.getIndex())+target_over_shift.getIndex(n.getIndex()))*100+"%");
+				logger.info(n.getIndex()+" over "+(target.getIndex(n.getIndex())+target_over_shift.getIndex(n.getIndex()))*100+"%");
 				reduceFood(n.getIndex());
 			}
 		}
-		System.out.println("=====================step 1 end=============================");
+		logger.info("=====================step 1 end=============================");
 		calNutrition(true);		
 		Date t2 = new Date();
 		Integer n1=step.size();
 
-		System.out.println("=====================step 2 add=============================");
+		logger.info("=====================step 2 add=============================");
 		initTargerReach();
 		Collections.sort(nutrition,new SortByPercent2TargetDesc());
 		for(Nutrition n:nutrition){
 			if(standard.getIndex(n.getIndex())*target.getIndex(n.getIndex())>cal_nutrition.getIndex(n.getIndex())){
-				System.out.println(n.getIndex()+" need reach target");
+				logger.info(n.getIndex()+" need reach target");
 				addFood(n.getIndex(),new ArrayList<Food>());
 			}
 		}
-		System.out.println("=====================step 2 end=============================");
+		logger.info("=====================step 2 end=============================");
 		calNutrition(true);
 		//printMenu();
 		Date t3 = new Date();
 		Integer n2=step.size();
 
-		System.out.println("=====================step 3 energy cost==========================");
+		logger.info("=====================step 3 energy cost==========================");
 		reinitTargerReach();
-		System.out.println("protein     :" + this.protein_per*100+"%");
-		System.out.println("fat         :" + this.fat_per*100+"%");
-		System.out.println("carbohydrate:" + this.carbohydrate_per*100+"%");
-		//balanceEnergy(new ArrayList<Food>());
-		System.out.println("protein     :" + this.protein_per*100+"%");
-		System.out.println("fat         :" + this.fat_per*100+"%");
-		System.out.println("carbohydrate:" + this.carbohydrate_per*100+"%");
-		System.out.println("=====================step 3 end==========================");
+		logger.info("protein     :" + this.protein_per*100+"%");
+		logger.info("fat         :" + this.fat_per*100+"%");
+		logger.info("carbohydrate:" + this.carbohydrate_per*100+"%");
+		balanceEnergy(new ArrayList<Food>());
+		logger.info("protein     :" + this.protein_per*100+"%");
+		logger.info("fat         :" + this.fat_per*100+"%");
+		logger.info("carbohydrate:" + this.carbohydrate_per*100+"%");
+		logger.info("=====================step 3 end==========================");
 		calNutrition(true);
 		Date t4 = new Date();
 		Integer n3=step.size();
 
-		System.out.println("=====================step 4 balance==========================");
+		logger.info("=====================step 4 balance==========================");
 		balanceDays();
-		System.out.println("=====================step 4 end==========================");
+		logger.info("=====================step 4 end==========================");
 		calNutrition(true);
 		Date t5 = new Date();
 		Integer n4=step.size();
-		System.out.println("step 1 total "+ n1 + " steps  cost=" +(t2.getTime()-t1.getTime())+"ms");
-		System.out.println("step 2 total "+ (n2-n1) + " steps  cost=" +(t3.getTime()-t2.getTime())+"ms");
-		System.out.println("step 3 total "+ (n3-n2) + " steps  cost=" +(t4.getTime()-t3.getTime())+"ms");
-		System.out.println("step 4 total "+ (n4-n3) + " steps  cost=" +(t5.getTime()-t4.getTime())+"ms");
+		logger.info("step 1 total "+ n1 + " steps  cost=" +(t2.getTime()-t1.getTime())+"ms");
+		logger.info("step 2 total "+ (n2-n1) + " steps  cost=" +(t3.getTime()-t2.getTime())+"ms");
+		logger.info("step 3 total "+ (n3-n2) + " steps  cost=" +(t4.getTime()-t3.getTime())+"ms");
+		logger.info("step 4 total "+ (n4-n3) + " steps  cost=" +(t5.getTime()-t4.getTime())+"ms");
 		return this.food;
 	}
 	
@@ -853,7 +856,7 @@ public class Algorithm implements Balance{
 				r.setFood(f);
 				r.setProcess(3);
 				step.add(r);
-				//System.out.println(r.toString());
+				logger.debug(r.toString());
 				Boolean isExcepted=false;
 				for(Food e:except){
 					if(f.getId()==e.getId())
@@ -864,7 +867,7 @@ public class Algorithm implements Balance{
 				Float[] new_ = calNutrition(false).clone();
 				for(int i =0;i<Define.NUM;i++){
 					gReachTarget.setIndexSum(i,f.getIndex(i)*f.getFoodPart()/10000);
-					//System.out.println("target:"+standard.getIndex(i)*target.getIndex(index)+":old:"+old_[i]+":new:"+new_[i]);
+					logger.debug("target:"+standard.getIndex(i)*target.getIndex(index)+":old:"+old_[i]+":new:"+new_[i]);
 					if(new_[i]<standard.getIndex(i)*target.getIndex(i)&&old_[i]>standard.getIndex(i)*target.getIndex(i)){
 						feedback[i] = true;
 					}else{
@@ -878,19 +881,19 @@ public class Algorithm implements Balance{
 		if(isReduced){
 			for(int i=0;i<Define.NUM;i++){
 				if(feedback[i]&&i!=index){
-					System.out.println("index "+index+" feed back add index "+i);
+					logger.info("index "+index+" feed back add index "+i);
 					addFood(i,except);
 				}
 			}
 			for(int i=0;i<Define.NUM;i++){
 				if(cal_nutrition.getIndex(i)<standard.getIndex(i)*target.getIndex(i)){
-					System.out.println("add feedback fail");
+					logger.info("add feedback fail");
 					return;
 				}
 			}
 			balanceEnergy(except);
 		}else{
-			System.out.println("no food cannot reduce index"+index);
+			logger.info("no food cannot reduce index"+index);
 		}
 	}
 	
@@ -970,7 +973,7 @@ public class Algorithm implements Balance{
 				r.setFood(f);
 				r.setProcess(3);
 				step.add(r);
-				//System.out.println(r.toString());
+				logger.debug(r.toString());
 				for(int i =0;i<Define.NUM;i++){
 					gReachTarget.setIndexSum(i,-f.getIndex(i)*f.getFoodPart()/10000);
 				}
@@ -981,7 +984,7 @@ public class Algorithm implements Balance{
 		if(isAdded){
 			balanceEnergy(except);
 		}else{
-			System.out.println("no food cannot add index "+index);
+			logger.info("no food cannot add index "+index);
 		}
 	}
 	
@@ -992,41 +995,41 @@ public class Algorithm implements Balance{
 			return;
 		}
 		if(except.size()==food.size()){
-			System.out.println("no more food");
+			logger.info("no more food");
 			return;
 		}
 		
 		if(this.protein_per>Define.ENERGY_PROTEIN_UP){
 			if(this.fat_per>Define.ENERGY_FAT_UP){
 				if(this.carbohydrate_per>Define.ENERGY_CARBOHYDRATE_UP){
-					assert(false);
+					logger.error("1 need check ");
 				}else if(this.carbohydrate_per<Define.ENERGY_CARBOHYDRATE_DOWN){
-					System.out.println("add CARBOHYDRATE");
+					logger.debug("add CARBOHYDRATE");
 					balanceAdd(Define.CARBOHYDRATE,except);
 				}else{
-					System.out.println("add CARBOHYDRATE");
+					logger.debug("add CARBOHYDRATE");
 					balanceAdd(Define.CARBOHYDRATE,except);
 				}
 			}else if(this.fat_per<Define.ENERGY_FAT_DOWN){
 				if(this.carbohydrate_per>Define.ENERGY_CARBOHYDRATE_UP){
-					System.out.println("add FAT");
+					logger.debug("add FAT");
 					balanceAdd(Define.FAT,except);
 				}else if(this.carbohydrate_per<Define.ENERGY_CARBOHYDRATE_DOWN){
-					System.out.println("reduce PROTEIN");
+					logger.debug("reduce PROTEIN");
 					balanceReduce(Define.PROTEIN,except);
 				}else{
-					System.out.println("add FAT");
+					logger.debug("add FAT");
 					balanceAdd(Define.FAT,except);
 				}
 			}else{
 				if(this.carbohydrate_per>Define.ENERGY_CARBOHYDRATE_UP){
-					System.out.println("add FAT");
+					logger.debug("add FAT");
 					balanceAdd(Define.FAT,except);
 				}else if(this.carbohydrate_per<Define.ENERGY_CARBOHYDRATE_DOWN){
-					System.out.println("add CARBOHYDRATE");
+					logger.debug("add CARBOHYDRATE");
 					balanceAdd(Define.CARBOHYDRATE,except);
 				}else{
-					System.out.println("reduce PROTEIN");
+					logger.debug("reduce PROTEIN");
 					balanceReduce(Define.PROTEIN,except);
 				}
 			}
@@ -1034,66 +1037,66 @@ public class Algorithm implements Balance{
 		}else if(this.protein_per<Define.ENERGY_PROTEIN_DOWN){
 			if(this.fat_per>Define.ENERGY_FAT_UP){
 				if(this.carbohydrate_per>Define.ENERGY_CARBOHYDRATE_UP){
-					System.out.println("add PROTEIN");
+					logger.debug("add PROTEIN");
 					balanceAdd(Define.PROTEIN,except);
 				}else if(this.carbohydrate_per<Define.ENERGY_CARBOHYDRATE_DOWN){
-					System.out.println("reduce FAT");
+					logger.debug("reduce FAT");
 					balanceReduce(Define.FAT,except);
 				}else{
-					System.out.println("add PROTEIN");
+					logger.debug("add PROTEIN");
 					balanceAdd(Define.PROTEIN,except);
 				}
 			}else if(this.fat_per<Define.ENERGY_FAT_DOWN){
 				if(this.carbohydrate_per>Define.ENERGY_CARBOHYDRATE_UP){
-					System.out.println("reduce CARBOHYDRATE");
+					logger.debug("reduce CARBOHYDRATE");
 					balanceReduce(Define.CARBOHYDRATE,except);
 				}else if(this.carbohydrate_per<Define.ENERGY_CARBOHYDRATE_DOWN){
-					assert(false);
+					logger.error("need check ");
 				}else{
-					System.out.println("reduce CARBOHYDRATE");
+					logger.debug("reduce CARBOHYDRATE");
 					balanceReduce(Define.CARBOHYDRATE,except);
 				}
 			}else{
 				if(this.carbohydrate_per>Define.ENERGY_CARBOHYDRATE_UP){
-					System.out.println("add PROTEIN");
+					logger.debug("add PROTEIN");
 					balanceAdd(Define.PROTEIN,except);
 				}else if(this.carbohydrate_per<Define.ENERGY_CARBOHYDRATE_DOWN){
-					System.out.println("reduce FAT");
+					logger.debug("reduce FAT");
 					balanceReduce(Define.FAT,except);
 				}else{
-					System.out.println("add PROTEIN");
+					logger.debug("add PROTEIN");
 					balanceAdd(Define.PROTEIN,except);
 				}
 			}
 		}else{
 			if(this.fat_per>Define.ENERGY_FAT_UP){
 				if(this.carbohydrate_per>Define.ENERGY_CARBOHYDRATE_UP){
-					System.out.println("add PROTEIN");
+					logger.debug("add PROTEIN");
 					balanceAdd(Define.PROTEIN,except);
 				}else if(this.carbohydrate_per<Define.ENERGY_CARBOHYDRATE_DOWN){
-					System.out.println("add CARBOHYDRATE");
+					logger.debug("add CARBOHYDRATE");
 					balanceAdd(Define.CARBOHYDRATE,except);
 				}else{
-					System.out.println("reduce FAT");
+					logger.debug("reduce FAT");
 					balanceReduce(Define.FAT,except);
 				}
 			}else if(this.fat_per<Define.ENERGY_FAT_DOWN){
 				if(this.carbohydrate_per>Define.ENERGY_CARBOHYDRATE_UP){
-					System.out.println("add FAT");
+					logger.debug("add FAT");
 					balanceAdd(Define.FAT,except);
 				}else if(this.carbohydrate_per<Define.ENERGY_CARBOHYDRATE_DOWN){
-					System.out.println("reduce PROTEIN");
+					logger.debug("reduce PROTEIN");
 					balanceReduce(Define.PROTEIN,except);
 				}else{
-					System.out.println("add FAT");
+					logger.debug("add FAT");
 					balanceAdd(Define.FAT,except);
 				}
 			}else{
 				if(this.carbohydrate_per>Define.ENERGY_CARBOHYDRATE_UP){
-					System.out.println("reduce CARBOHYDRATE");
+					logger.debug("reduce CARBOHYDRATE");
 					balanceReduce(Define.CARBOHYDRATE,except);
 				}else if(this.carbohydrate_per<Define.ENERGY_CARBOHYDRATE_DOWN){
-					System.out.println("add CARBOHYDRATE");
+					logger.debug("add CARBOHYDRATE");
 					balanceAdd(Define.CARBOHYDRATE,except);
 				}else{
 					return;
@@ -1127,5 +1130,13 @@ public class Algorithm implements Balance{
 			map.put(f.getId(), f.getGram());
 		}
 		return map;
+	}
+	
+	public void setLogLevel(Integer level){
+		logger.setLogLevel(level);
+	}
+	
+	public void logOnOff(Boolean on){
+		logger.setLogOn(on);
 	}
 }
