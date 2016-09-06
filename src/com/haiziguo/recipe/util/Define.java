@@ -64,7 +64,7 @@ public interface Define {
 		 */
 		private static final long serialVersionUID = 1L;
 
-	{add(21);add(22);add(23);add(24);}};
+	{add(7);add(22);add(23);add(24);add(25);}};
 	public final static Boolean ORDER_ASC = true;
 	public final static Boolean ORDER_DESC = false;
 	
@@ -78,9 +78,9 @@ public interface Define {
 	public final static Integer ADD_UP_ALL = 30;
 	
 	public final static Float [] DEFAULT_TARGET = {0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f};
-	public final static Float [] DEFAULT_TARGET_MAX = {1.0f,1.0f,1.0f,1.0f,2.0f,2.0f,2.0f,2.0f,2.0f,2.0f,2.0f};
-	public final static Float [] DEFAULT_TARGET_OVER_SHIFT = {0.10f,0.10f,0.10f,0.10f,0.6f,0.6f,0.6f,0.6f,0.6f,0.6f,0.6f};
-	public final static Float [] DEFAULT_TARGET_MAX_SHIFT = {0.2f,0.2f,0.2f,0.2f,1.2f,1.2f,1.2f,1.2f,1.2f,1.2f,1.2f};
+	public final static Float [] DEFAULT_TARGET_MAX = {1.2f,1.2f,1.2f,1.2f,1.2f,1.2f,1.2f,1.2f,1.2f,1.2f,1.2f};
+	public final static Float [] DEFAULT_TARGET_OVER_SHIFT = {0.2f,0.2f,0.2f,0.2f,0.2f,0.2f,0.2f,0.2f,0.2f,0.2f,0.2f};
+	public final static Float [] DEFAULT_TARGET_MAX_SHIFT = {0.4f,0.4f,0.4f,0.4f,0.4f,0.4f,0.4f,0.4f,0.4f,0.4f,0.4f};
 	
 	public final static Integer LOG_DEBUG=0;
 	public final static Integer LOG_INFO=1;

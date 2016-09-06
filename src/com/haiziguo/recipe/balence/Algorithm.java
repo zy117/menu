@@ -20,6 +20,7 @@ public class Algorithm implements Balance{
 	private Params cal_nutrition = new Params();
 	private Params cal_nutrition_percent = new Params();	
 	
+	private Integer max_retry = 1;
 	
 	private Params standard = new Params();			//save permanent standard one day
 	private Params target = new Params(Define.DEFAULT_TARGET);	//save target % to standard，can be separated set to different values， default is 80% in all
@@ -147,9 +148,10 @@ public class Algorithm implements Balance{
 			for(int i = 0;i<Define.NUM;i++){
 				temp.setIndex(i,f.getGram()*f.getFoodPart()*f.getIndex(i)/10000);
 				if(temp.getIndex(i)<standard.getIndex(i)*target.getIndex(i)){
-					per = 2;
+					per = Math.max(2,per);
 				}else{
-					per = (int) (temp.getIndex(i)/standard.getIndex(i)*target.getIndex(i))+2;
+					per = (int) (temp.getIndex(i)/(standard.getIndex(i)*target.getIndex(i)));
+					per += 3;
 					logger.info("index "+i+" set "+f.getFoodName()+" per = "+per);
 					f.setAdd_gram(f.getGram());
 				}
@@ -212,6 +214,16 @@ public class Algorithm implements Balance{
 			n.setPercent2max((target.getIndex(n.getIndex())+target_max_shift.getIndex(n.getIndex()))*100-cal_nutrition_percent.getIndex(n.getIndex()));
 		}
 		return cal_nutrition_percent.toFloatArray();
+	}
+	
+	public Boolean isNutritionMeetTarget(){
+		for(Nutrition n:nutrition){
+			if(n.getPercent2target()>0.0f)
+				return false;
+			if(n.getPercent2max()<0.0f)
+				return false;
+		}
+		return true;
 	}
 	
     /**
@@ -355,6 +367,7 @@ public class Algorithm implements Balance{
 			return;
 		}
 		Integer param = 0;
+		Boolean needReduce = false;
 		outter:
 		while(standard.getIndex(index)*(target.getIndex(index))>cal_nutrition.getIndex(index)){
 			List<Nutrition> temp = new ArrayList<Nutrition>(nutrition);
@@ -365,6 +378,7 @@ public class Algorithm implements Balance{
 			Iterator<Food> ifood = food.iterator();
 			Food f = new Food();
 			Boolean isAdded = false;
+
 			inner:
 			while(ifood.hasNext()){
 				f = ifood.next();
@@ -394,6 +408,7 @@ public class Algorithm implements Balance{
 				}
 				for(int i =0;i<Define.NUM;i++){
 					if(i!=index&&gReachTarget.getIndex(i)<f.getIndex(i)*f.getFoodPart()/10000){
+						needReduce = true;
 						param = i;
 						canAdd = false;
 					}
@@ -415,13 +430,13 @@ public class Algorithm implements Balance{
 				}
 			}
 			if(!isAdded){
-				logger.info(" index "+index+" no more food add, "+ param+" reach max!");
+				logger.info(" index "+index+" no more food add, "+ param+" need reduce = "+needReduce);
 				break outter;
 			}
 		}
 		if(standard.getIndex(index)*target.getIndex(index)<cal_nutrition.getIndex(index)){
 			logger.info(" add index "+index+" end:"+standard.getIndex(index)+"*"+target.getIndex(index)+"<"+cal_nutrition.getIndex(index));
-		}else{
+		}else if(needReduce){
 			sortFood(param,index,Define.ORDER_DESC);
 			Boolean[] feedback = {false,false,false,false,false,false,false,false,false,false,false};
 			Boolean isReduced = false;
@@ -496,7 +511,9 @@ public class Algorithm implements Balance{
 					addFood(i,except);
 				}
 			}
-		}		
+		}else{
+			logger.info("no more food add,try again");
+		}
 	}
 	
 	private void initTargetOver(){
@@ -685,13 +702,17 @@ public class Algorithm implements Balance{
 					}
 					if(balance.compareTo(0)==0||lid.size()==1){
 						if(remain>0){
-							f.setGram(f.getGram()+1);
-							remain--;
-							offset--;
+							if(f.getGram()+1 <= f.getAdd_gram()){
+								f.setGram(f.getGram()+1);
+								remain--;
+								offset--;
+							}
 						}else if(remain<0){
-							f.setGram(f.getGram()-1);
-							remain++;
-							offset++;
+							if(f.getGram()-1 >= f.getReduce_gram()){
+								f.setGram(f.getGram()-1);
+								remain++;
+								offset++;
+							}
 						}
 					}
 					Integer newg = f.getGram();
@@ -736,6 +757,10 @@ public class Algorithm implements Balance{
 		Date t1 = new Date();
 		standard.plusDays(days);
 		calNutrition(true);
+		if(isNutritionMeetTarget()){
+			logger.info("no need to balance");
+			return this.food;
+		}
 		logger.info("=====================step 1 reduce==========================");
 		calNutritionPerFood();
 		initTargetOver();		
@@ -790,6 +815,11 @@ public class Algorithm implements Balance{
 		logger.info("step 2 total "+ (n2-n1) + " steps  cost=" +(t3.getTime()-t2.getTime())+"ms");
 		logger.info("step 3 total "+ (n3-n2) + " steps  cost=" +(t4.getTime()-t3.getTime())+"ms");
 		logger.info("step 4 total "+ (n4-n3) + " steps  cost=" +(t5.getTime()-t4.getTime())+"ms");
+		if(isNutritionMeetTarget()){
+			logger.info("done");
+		}else{
+			logger.warn("balance end! not meet target!");
+		}
 		return this.food;
 	}
 	
@@ -1138,5 +1168,13 @@ public class Algorithm implements Balance{
 	
 	public void logOnOff(Boolean on){
 		logger.setLogOn(on);
+	}
+
+	public Integer getMax_retry() {
+		return max_retry;
+	}
+
+	public void setMax_retry(Integer max_retry) {
+		this.max_retry = max_retry;
 	}
 }

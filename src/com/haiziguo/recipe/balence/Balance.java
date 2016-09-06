@@ -20,4 +20,6 @@ public interface Balance {
 	public void printMenu();
 	
 	public Map<Integer,Integer> getResultsMap();
+	
+	public Boolean isNutritionMeetTarget();
 }
