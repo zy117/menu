@@ -84,7 +84,7 @@ public class Food {
     	this.foodId = (Integer)obj[6];
     	this.gram = ((Double)obj[4]).intValue();
     	this.setFoodPart((Integer)obj[8]);
-    	this.setAdd_gram(((gram<Define.ADD_UP_ALL)?(gram<<1):(gram+Define.ADD_UP_ALL)));
+    	this.setAdd_gram(gram);
     	this.setReduce_gram(gram>>1);
 
     	this.isAdjustable = true;
@@ -341,7 +341,15 @@ public class Food {
 	}
 
 	public void setAdd_gram(Integer add_gram) {
-		this.add_gram = add_gram;
+		if(add_gram<5){
+			this.add_gram = 10;
+		}else if(add_gram<Define.ADD_UP_ALL){
+			this.add_gram =add_gram<<1;
+		}else if(add_gram>Define.UP_TOTAL){
+			this.add_gram = add_gram;
+		}else {
+			this.add_gram = add_gram + Define.ADD_UP_ALL;
+		}
 	}
 
 	public Integer getReduce_gram() {
@@ -352,7 +360,11 @@ public class Food {
 	}
 
 	public void setReduce_gram(Integer reduce_gram) {
-		this.reduce_gram = reduce_gram;
+		if(reduce_gram<1){
+			this.reduce_gram = 1;
+		}else{
+			this.reduce_gram = reduce_gram;
+		}
 	}
 
 	public Integer getDay() {

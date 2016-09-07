@@ -76,6 +76,7 @@ public interface Define {
 	public final static Integer ADD_STEP = 1;
 	public final static Integer REDUCE_STEP = 3;
 	public final static Integer ADD_UP_ALL = 30;
+	public final static Integer UP_TOTAL = 200;
 	
 	public final static Float [] DEFAULT_TARGET = {0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f,0.8f};
 	public final static Float [] DEFAULT_TARGET_MAX = {1.2f,1.2f,1.2f,1.2f,1.2f,1.2f,1.2f,1.2f,1.2f,1.2f,1.2f};

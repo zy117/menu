@@ -706,12 +706,14 @@ public class Algorithm implements Balance{
 								f.setGram(f.getGram()+1);
 								remain--;
 								offset--;
+								lid.put(i, 1+lgram);
 							}
 						}else if(remain<0){
 							if(f.getGram()-1 >= f.getReduce_gram()){
 								f.setGram(f.getGram()-1);
 								remain++;
 								offset++;
+								lid.put(i, -1+lgram);
 							}
 						}
 					}
