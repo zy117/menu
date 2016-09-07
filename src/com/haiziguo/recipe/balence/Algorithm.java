@@ -361,6 +361,64 @@ public class Algorithm implements Balance{
 		calNutrition(false);
 	}
 	
+	private void readd(){
+		Collections.sort(nutrition,new SortByPercent2TargetDesc());
+		for(Nutrition n:nutrition){
+			if(n.getPercent2target()>0.0f){
+				Integer index = n.getIndex();
+				logger.info("need add "+n.getIndex()+" to meet target "+target.getIndex(n.getIndex()));
+				outter:
+					while(n.getPercent2target()>0.0f){
+						List<Nutrition> temp = new ArrayList<Nutrition>(nutrition);
+						Collections.sort(temp,new SortByPercent2TargetAsc());
+						Integer param = temp.get(0).getIndex();
+						sortFood(n.getIndex(),param,Define.ORDER_DESC);
+						Iterator<Food> ifood = food.iterator();
+						Food f = new Food();
+						Boolean isAdded = false;
+						
+						inner:
+							while(ifood.hasNext()){
+								f = ifood.next();
+								Boolean canAdd = true;
+								if(!f.getIsAdjustable()){
+									canAdd = false;
+								}
+								if(f.getIndex(index)<Define.FLOAT_ZERO){
+									canAdd = false;
+								}
+								if(f.getGram()>=f.getAdd_gram()){
+									canAdd = false;
+								}
+								if(checkhighproteinprecent<Define.ENERGY_HIGH_PER){
+									for(Integer i:Define.ENERGY_LOW){
+										if(f.getType3().compareTo(i)==0){
+											canAdd = false;
+										}
+									}
+								}
+								if(canAdd){
+									isAdded = true;
+									f.setGram(f.getGram()+1);
+									BalanceStep r = new BalanceStep();
+									r.setAddOrReduce(Define.ADD_1G);
+									r.setFood(f);
+									r.setProcess(5);
+									step.add(r);
+									logger.debug(r.toString());
+									calNutrition(false);
+									break inner;
+								}
+							}
+						if(!isAdded){
+							logger.warn("no food to add "+ index);
+							break outter;
+						}
+					}
+				calNutrition(true);
+			}
+		}	
+	}
 	private void addFood(Integer index, List<Food> except){
 		if(except.size() == food.size()){
 			logger.info("except full no more food for add");
@@ -792,7 +850,7 @@ public class Algorithm implements Balance{
 		//printMenu();
 		Date t3 = new Date();
 		Integer n2=step.size();
-
+		
 		logger.info("=====================step 3 energy cost==========================");
 		reinitTargerReach();
 		logger.info("protein     :" + this.protein_per*100+"%");
@@ -821,6 +879,9 @@ public class Algorithm implements Balance{
 			logger.info("done");
 		}else{
 			logger.warn("balance end! not meet target!");
+			readd();
+			balanceDays();
+			calNutrition(true);
 		}
 		return this.food;
 	}
