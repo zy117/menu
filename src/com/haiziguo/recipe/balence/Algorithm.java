@@ -10,17 +10,30 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.haiziguo.recipe.sort.*;
+import com.haiziguo.recipe.sort.SortByCaPerParam;
+import com.haiziguo.recipe.sort.SortByCarbohydratePerParam;
+import com.haiziguo.recipe.sort.SortByEnergyPerParam;
+import com.haiziguo.recipe.sort.SortByFatPerParam;
+import com.haiziguo.recipe.sort.SortByFePerParam;
+import com.haiziguo.recipe.sort.SortById;
+import com.haiziguo.recipe.sort.SortByNaPerParam;
+import com.haiziguo.recipe.sort.SortByParamEnergy;
+import com.haiziguo.recipe.sort.SortByProteinPerParam;
+import com.haiziguo.recipe.sort.SortByVaPerParam;
+import com.haiziguo.recipe.sort.SortByVb1PerParam;
+import com.haiziguo.recipe.sort.SortByVb2PerParam;
+import com.haiziguo.recipe.sort.SortByVcPerParam;
+import com.haiziguo.recipe.sort.SortByVePerParam;
+import com.haiziguo.recipe.sort.SortByZnPerParam;
 import com.haiziguo.recipe.util.Define;
+import com.haiziguo.recipe.util.FoodType;
 import com.haiziguo.recipe.util.Logger;
 
 public class Algorithm implements Balance{
 
 	private Logger logger = new Logger();
 	private Params cal_nutrition = new Params();
-	private Params cal_nutrition_percent = new Params();	
-	
-	private Integer max_retry = 1;
+	private Params cal_nutrition_percent = new Params();
 	
 	private Params standard = new Params();			//save permanent standard one day
 	private Params target = new Params(Define.DEFAULT_TARGET);	//save target % to standard，can be separated set to different values， default is 80% in all
@@ -34,7 +47,7 @@ public class Algorithm implements Balance{
 	private List<Food> food;
 	private Map<Integer, Food> foodmap;
 	private List<Nutrition> nutrition = new ArrayList<Nutrition>();
-	private Type type = new Type();
+	//private Type type = new Type();
 	
 	private Boolean isFoodInited = false;
 	private Boolean isStandardSet = false;
@@ -71,31 +84,31 @@ public class Algorithm implements Balance{
 		days = day.size();
 		meals = meal.size();
 		logger.info("banlance "+days+" days "+meals+" meals/day menu!");
-		type.plusDaysAndMeals(days, 1.0f);
+		//type.plusDaysAndMeals(days, 1.0f);
 		this.isFoodInited = true;
-		Nutrition ENERGY = new Nutrition(Define.ENERGY,cal_nutrition_percent.getIndex(Define.ENERGY));
+		Nutrition ENERGY 		= new Nutrition(Define.ENERGY,cal_nutrition_percent.getIndex(Define.ENERGY));
 		nutrition.add(ENERGY);
-		Nutrition PROTEIN = new Nutrition(Define.PROTEIN,cal_nutrition_percent.getIndex(Define.PROTEIN));
+		Nutrition PROTEIN 		= new Nutrition(Define.PROTEIN,cal_nutrition_percent.getIndex(Define.PROTEIN));
 		nutrition.add(PROTEIN);
-		Nutrition FAT = new Nutrition(Define.FAT,cal_nutrition_percent.getIndex(Define.FAT));
+		Nutrition FAT 			= new Nutrition(Define.FAT,cal_nutrition_percent.getIndex(Define.FAT));
 		nutrition.add(FAT);
-		Nutrition CARBOHYDRATE = new Nutrition(Define.CARBOHYDRATE,cal_nutrition_percent.getIndex(Define.CARBOHYDRATE));
+		Nutrition CARBOHYDRATE 	= new Nutrition(Define.CARBOHYDRATE,cal_nutrition_percent.getIndex(Define.CARBOHYDRATE));
 		nutrition.add(CARBOHYDRATE);
-		Nutrition CA = new Nutrition(Define.CA,cal_nutrition_percent.getIndex(Define.CA));
+		Nutrition CA 			= new Nutrition(Define.CA,cal_nutrition_percent.getIndex(Define.CA));
 		nutrition.add(CA);
-		Nutrition FE = new Nutrition(Define.FE,cal_nutrition_percent.getIndex(Define.FE));
+		Nutrition FE 			= new Nutrition(Define.FE,cal_nutrition_percent.getIndex(Define.FE));
 		nutrition.add(FE);
-		Nutrition ZN = new Nutrition(Define.ZN,cal_nutrition_percent.getIndex(Define.ZN));
+		Nutrition ZN 			= new Nutrition(Define.ZN,cal_nutrition_percent.getIndex(Define.ZN));
 		nutrition.add(ZN);
-		Nutrition VA = new Nutrition(Define.VA,cal_nutrition_percent.getIndex(Define.VA));
+		Nutrition VA 			= new Nutrition(Define.VA,cal_nutrition_percent.getIndex(Define.VA));
 		nutrition.add(VA);
-		Nutrition VB1 = new Nutrition(Define.VB1,cal_nutrition_percent.getIndex(Define.VB1));
+		Nutrition VB1 			= new Nutrition(Define.VB1,cal_nutrition_percent.getIndex(Define.VB1));
 		nutrition.add(VB1);
-		Nutrition VB2 = new Nutrition(Define.VB2,cal_nutrition_percent.getIndex(Define.VB2));
+		Nutrition VB2 			= new Nutrition(Define.VB2,cal_nutrition_percent.getIndex(Define.VB2));
 		nutrition.add(VB2);
-		Nutrition VC = new Nutrition(Define.VC,cal_nutrition_percent.getIndex(Define.VC));
+		Nutrition VC 			= new Nutrition(Define.VC,cal_nutrition_percent.getIndex(Define.VC));
 		nutrition.add(VC);
-		logger.info(type.toString());
+		//logger.info(type.toString());
 	}
 		
 	public void printMenu(){
@@ -144,42 +157,35 @@ public class Algorithm implements Balance{
 	private void calNutritionPerFood(){
 		Params temp = new Params();
 		for(Food f:food){
-			Integer per = 2;
 			for(int i = 0;i<Define.NUM;i++){
 				temp.setIndex(i,f.getIndexIntake(i));
-				if(temp.getIndex(i)<standard.getIndex(i)*target.getIndex(i)){
-					per = Math.max(2,per);
-				}else{
-					per = (int) (temp.getIndex(i)/(standard.getIndex(i)*target.getIndex(i)));
-					per += 3;
-					logger.info("index "+i+" set "+f.getFoodName()+" per = "+per);
-					f.setAdd_gram(f.getGram());
+				//如果单一营养单日超标
+				Float recom = standard.getIndex(i)*target.getIndex(i)/days.floatValue();
+				if(temp.getIndex(i)>recom){
+					Integer max = (int) (recom/f.getIndexIntakePerGram(i));//得到每日最多摄入克数
+					f.setAdd_gram(max);
+					if(f.getReduce_gram()>max){
+						f.setReduce_gram(max);
+					}
 				}
 			}
-			f.setReduce_gram(f.getGram()/per);
 		}
 	}
 	
 	private Float[] calNutrition(Boolean debug){
 		cal_nutrition.setZero();
-		type.resetCur();
+		//type.resetCur();
 		Float good_protein = 0.0f;
 		for(Food f:food){
 			for(int i =0;i<Define.NUM;i++){
 				cal_nutrition.setIndexSum(i, f.getIndexIntake(i));
 			}
-			for(Integer i:Define.ENERGY_HIGH){
-				if(f.getType3().compareTo(i)==0){
-					good_protein += f.getIndexIntake(Define.PROTEIN);
-				}
-			}
-			if(Define.FOOD_NULL<f.getType1()&&f.getType1()<Define.FOOD_INVALID){
-				type.setTypeCurSelfAdd(f.getType1(), ((float)(f.getGram()*f.getFoodPart()/100)));
+			if(FoodType.isHighProtein(f.getType3())){
+				good_protein += f.getIndexIntake(Define.PROTEIN);
 			}
 		}
 		if(debug){
 			logger.info("menu list cal_nutrition:" + cal_nutrition.toString());
-			logger.info(type.toString());
 		}
 		Float energy_all = cal_nutrition.getIndex(Define.PROTEIN)*4+cal_nutrition.getIndex(Define.FAT)*9+cal_nutrition.getIndex(Define.CARBOHYDRATE)*4;
 		this.protein_per = cal_nutrition.getIndex(Define.PROTEIN)*4/energy_all;
@@ -330,10 +336,8 @@ public class Algorithm implements Balance{
 				continue;
 			}
 			if(checkhighproteinprecent<Define.ENERGY_HIGH_PER){
-				for(Integer i:Define.ENERGY_HIGH){
-					if(f.getType3().compareTo(i)==0){
-						continue;
-					}
+				if(FoodType.isHighProtein(f.getType3())){
+					continue;
 				}
 			}
 			Integer gram = f.getGram() - f.getReduce_gram();
@@ -391,10 +395,8 @@ public class Algorithm implements Balance{
 									canAdd = false;
 								}
 								if(checkhighproteinprecent<Define.ENERGY_HIGH_PER){
-									for(Integer i:Define.ENERGY_LOW){
-										if(f.getType3().compareTo(i)==0){
-											canAdd = false;
-										}
+									if(!FoodType.isHighProtein(f.getType3())){
+										canAdd = false;
 									}
 								}
 								if(canAdd){
@@ -451,10 +453,8 @@ public class Algorithm implements Balance{
 					canAdd = false;
 				}
 				if(checkhighproteinprecent<Define.ENERGY_HIGH_PER){
-					for(Integer i:Define.ENERGY_LOW){
-						if(f.getType3().compareTo(i)==0){
-							canAdd = false;
-						}
+					if(!FoodType.isHighProtein(f.getType3())){
+						canAdd = false;
 					}
 				}
 				Iterator<Food> efood = except.iterator();
@@ -512,16 +512,14 @@ public class Algorithm implements Balance{
 					continue;
 				}
 				if(checkhighproteinprecent<Define.ENERGY_HIGH_PER){
-					for(Integer i:Define.ENERGY_HIGH){
-						if(f.getType3().compareTo(i)==0){
-							for(Food e:except){
-								if(f.getId()==e.getId())
-									isExcepted = true;
-							}
-							if(!isExcepted)
-								except.add(f);
-							continue;
+					if(FoodType.isHighProtein(f.getType3())){
+						for(Food e:except){
+							if(f.getId()==e.getId())
+								isExcepted = true;
 						}
+						if(!isExcepted)
+							except.add(f);
+						continue;
 					}
 				}
 				if((f.getGram()>=f.getReduce_gram()+Define.REDUCE_STEP)&&f.getIsAdjustable()){
@@ -610,7 +608,7 @@ public class Algorithm implements Balance{
 		Map<Integer,Integer> dayOffset = new HashMap<Integer,Integer>();
 		while(istep.hasNext()){
 			BalanceStep s = istep.next();
-			logger.debug(s.toString());
+			//logger.debug(s.toString());
 			Integer id = s.getFood().getId();
 			Integer day = s.getFood().getDay();
 			if(map.containsKey(id)){
@@ -730,16 +728,18 @@ public class Algorithm implements Balance{
 								else
 									offset-= f.getReduce_gram() - f.getGram();
 								f.setGram(f.getReduce_gram());
-								rid.add(i);
+								if(offset<0)//还有未减完，但i已不能减
+									rid.add(i);
 						}else{
 								if(lgram.compareTo(0)==0)
 									offset-=(f.getAdd_gram() - (f.getGram()-map.get(i)));
 								else
 									offset-=f.getAdd_gram()-f.getGram();
 								f.setGram(f.getAdd_gram());
-								rid.add(i);
+								if(offset>0)//还有加完，但i已不能加						
+									rid.add(i);
 						}
-						logger.debug(f.getGram()+" offset :"+offset);
+						logger.debug(f.getReduce_gram()+":"+f.getGram()+":"+f.getAdd_gram()+" offset :"+offset);
 					}else{//食谱保持原始克数
 						logger.debug(" balance food not modify" + f.getFoodName() + " foodid " + f.getFoodId());
 						Integer bgram =f.getGram()+balance;
@@ -820,9 +820,12 @@ public class Algorithm implements Balance{
 		if(isNutritionMeetTarget()){
 			logger.info("no need to balance");
 			return this.food;
-		}
-		logger.info("=====================step 1 reduce==========================");
+		}		
+		logger.info("=====================step 0 init reduce==========================");
 		calNutritionPerFood();
+		removeLimit();
+		calNutrition(false);
+		logger.info("=====================step 1 reduce==========================");
 		initTargetOver();		
 		Collections.sort(nutrition,new SortByPercent2OverDesc());
 		for(Nutrition n:nutrition){
@@ -886,6 +889,34 @@ public class Algorithm implements Balance{
 		return this.food;
 	}
 	
+	private void removeLimit() {
+		// TODO Auto-generated method stub
+		for(Food f:food){
+			if(f.getGram()<f.getReduce_gram()){
+				Integer add = f.getReduce_gram() - f.getGram();
+				f.setGram(f.getReduce_gram());
+				for(int i=0;i<add;i++){
+					BalanceStep r = new BalanceStep();
+					r.setAddOrReduce(Define.ADD_1G);
+					r.setFood(f);
+					r.setProcess(0);
+					step.add(r);
+				}
+			}else if(f.getGram()>f.getAdd_gram()){
+				Integer add = f.getGram()- f.getAdd_gram();
+				f.setGram(f.getAdd_gram());
+				for(int i=0;i<add;i++){
+					BalanceStep r = new BalanceStep();
+					r.setAddOrReduce(Define.REDUCE_1G);
+					r.setFood(f);
+					r.setProcess(0);
+					step.add(r);
+				}
+			}
+		}
+		
+	}
+
 	private void balanceReduce(Integer index,List<Food> except){
 		Collections.sort(food,new SortByParamEnergy(Define.ORDER_DESC,index));
 		Boolean isReduced = false;
@@ -933,11 +964,9 @@ public class Algorithm implements Balance{
 				}
 			}
 			if(checkhighproteinprecent<Define.ENERGY_HIGH_PER){
-				for(Integer i:Define.ENERGY_HIGH){
-					if(f.getType3().compareTo(i)==0){
-						canReduce = false;
-						continue;
-					}
+				if(FoodType.isHighProtein(f.getType3())){
+					canReduce = false;
+					continue;
 				}
 			}
 			if(canReduce){
@@ -1045,11 +1074,9 @@ public class Algorithm implements Balance{
 				}
 			}
 			if(checkhighproteinprecent<Define.ENERGY_HIGH_PER){
-				for(Integer i:Define.ENERGY_LOW){
-					if(f.getType3().compareTo(i)==0){
-						canAdd = false;
-						continue;
-					}
+				if(!FoodType.isHighProtein(f.getType3())){
+					canAdd = false;
+					continue;
 				}
 			}
 			for(int i =0;i<Define.NUM;i++){
@@ -1231,13 +1258,5 @@ public class Algorithm implements Balance{
 	
 	public void logOnOff(Boolean on){
 		logger.setLogOn(on);
-	}
-
-	public Integer getMax_retry() {
-		return max_retry;
-	}
-
-	public void setMax_retry(Integer max_retry) {
-		this.max_retry = max_retry;
 	}
 }

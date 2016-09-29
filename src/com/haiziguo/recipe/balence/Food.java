@@ -1,6 +1,9 @@
 package com.haiziguo.recipe.balence;
 
+import java.util.Map;
+
 import com.haiziguo.recipe.util.Define;
+import com.haiziguo.recipe.util.FoodType;
 
 public class Food {
 	private Integer id;
@@ -97,6 +100,39 @@ public class Food {
     
     public Food(){
     	
+    }
+    
+    @SuppressWarnings("unchecked")
+	public Food(Integer id, Object obj){
+    	this.id = id;
+    	Map<String,Object> map = (Map<String, Object>) obj;
+    	this.day = (Integer) map.get("week");
+    	this.meal = (Integer) map.get("mealTimes");
+    	this.menuId = (Integer) map.get("menuId");
+    	this.menuName = map.get("menuName").toString();
+    	this.foodId = (Integer) map.get("foodId");
+    	this.foodName = map.get("foodName").toString();
+    	this.foodPart = (Integer) map.get("foodpart");
+    	this.energy = (Float) map.get("energy");
+    	this.protein = (Float) map.get("energy");
+    	this.fat = (Float) map.get("fats");
+    	this.carbohydrate = (Float) map.get("carbohydrate");
+    	this.ca = (Float) map.get("ca");
+    	this.fe = (Float) map.get("fe");
+    	this.zn = (Float) map.get("zn");
+    	this.va = (Float) map.get("vitaminA");
+    	this.vb1 = (Float) map.get("vitaminB1");
+    	this.vb2 = (Float) map.get("vitaminB2");
+    	this.vc = (Float) map.get("vitaminC");
+    	
+    	this.gram = ((Float)map.get("foodQuan")).intValue();
+    	this.type1 = (Integer)map.get("typeMainId");
+    	this.type2 = (Integer)map.get("typeSubId");
+    	this.type3 = (Integer)map.get("typeEnergyId");
+    	
+    	this.isAdjustable = FoodType.isAdjustable(type1);
+    	this.add_gram = FoodType.getMaxGram(type2);
+    	this.reduce_gram = FoodType.getMinGram(type2);
     }
     
     public Food(Integer id, Object[] obj 
@@ -367,15 +403,7 @@ public class Food {
 	}
 
 	public void setAdd_gram(Integer add_gram) {
-		if(add_gram<5){
-			this.add_gram = 10;
-		}else if(add_gram<Define.ADD_UP_ALL){
-			this.add_gram =add_gram<<1;
-		}else if(add_gram>Define.UP_TOTAL){
-			this.add_gram = add_gram;
-		}else {
-			this.add_gram = add_gram + Define.ADD_UP_ALL;
-		}
+		this.add_gram = add_gram;
 	}
 
 	public Integer getReduce_gram() {
