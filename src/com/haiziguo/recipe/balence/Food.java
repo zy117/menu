@@ -114,7 +114,7 @@ public class Food {
     	this.foodName = map.get("foodName").toString();
     	this.foodPart = (Integer) map.get("foodpart");
     	this.energy = (Float) map.get("energy");
-    	this.protein = (Float) map.get("energy");
+    	this.protein = (Float) map.get("protein");
     	this.fat = (Float) map.get("fats");
     	this.carbohydrate = (Float) map.get("carbohydrate");
     	this.ca = (Float) map.get("ca");

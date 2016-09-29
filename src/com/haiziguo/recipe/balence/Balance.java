@@ -22,4 +22,6 @@ public interface Balance {
 	public Map<Integer,Integer> getResultsMap();
 	
 	public Boolean isNutritionMeetTarget();
+	
+	public Boolean isBalanced();
 }

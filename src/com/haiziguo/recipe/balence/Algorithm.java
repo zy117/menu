@@ -52,6 +52,7 @@ public class Algorithm implements Balance{
 	private Boolean isFoodInited = false;
 	private Boolean isStandardSet = false;
 	private Boolean isTargetSet = false;
+	private Boolean isBalanced = false;
 	private Integer days = 1;
 	private Integer meals = 3;
 	
@@ -694,7 +695,7 @@ public class Algorithm implements Balance{
 					logger.info("id "+id + " have same food in list, lid size = "+lid.size()+", offset = "+offset+",every balance add or reduce = "+balance+",remain " + remain);
 				}
 				/*
-				 * rid 	存放下次无法继续调整，被移除的食谱id
+				 * rid 	存放下次无法继续调整，被移除的食谱id,需要与offset判断
 				 */
 				List<Integer> rid = new ArrayList<Integer>();
 				for(Integer i:lid.keySet()){
@@ -723,21 +724,25 @@ public class Algorithm implements Balance{
 								offset-=balance;
 								lid.put(i, balance+lgram);//将balance累加进去
 						}else if(f.getReduce_gram()>bgram){
+								Integer delta = 0;
 								if(lgram.compareTo(0)==0)
-									offset-=(f.getReduce_gram() - (f.getGram()-map.get(i)));
+									delta =(f.getReduce_gram() - (f.getGram()-map.get(i)));
 								else
-									offset-= f.getReduce_gram() - f.getGram();
+									delta = f.getReduce_gram() - f.getGram();
+								offset -=delta;
 								f.setGram(f.getReduce_gram());
-								if(offset<0)//还有未减完，但i已不能减
-									rid.add(i);
+								rid.add(i);//待移除
+								lid.put(i, lgram+delta);
 						}else{
+								Integer delta = 0;
 								if(lgram.compareTo(0)==0)
-									offset-=(f.getAdd_gram() - (f.getGram()-map.get(i)));
+									delta=(f.getAdd_gram() - (f.getGram()-map.get(i)));
 								else
-									offset-=f.getAdd_gram()-f.getGram();
-								f.setGram(f.getAdd_gram());
-								if(offset>0)//还有加完，但i已不能加						
-									rid.add(i);
+									delta=f.getAdd_gram()-f.getGram();
+								offset -= delta;
+								f.setGram(f.getAdd_gram());				
+								rid.add(i);//待移除
+								lid.put(i, lgram+delta);
 						}
 						logger.debug(f.getReduce_gram()+":"+f.getGram()+":"+f.getAdd_gram()+" offset :"+offset);
 					}else{//食谱保持原始克数
@@ -748,13 +753,17 @@ public class Algorithm implements Balance{
 							offset-=balance;
 							lid.put(i, balance+lgram);
 						}else if(f.getReduce_gram()>bgram){
-							rid.add(i);
-							offset-=f.getReduce_gram()-f.getGram();
-							f.setGram(f.getReduce_gram());	
+							rid.add(i);//待移除
+							Integer delta = f.getReduce_gram()-f.getGram();
+							offset-=delta;
+							f.setGram(f.getReduce_gram());
+							lid.put(i, lgram+delta);
 						}else{
-							rid.add(i);
-							offset-=f.getAdd_gram()-f.getGram();
+							rid.add(i);//待移除
+							Integer delta =f.getAdd_gram()-f.getGram();
+							offset-=delta;
 							f.setGram(f.getAdd_gram());
+							lid.put(i, lgram+delta);
 						}
 						logger.debug(f.getGram()+" offset :"+offset);
 					}
@@ -798,8 +807,19 @@ public class Algorithm implements Balance{
 				}//end for(Integer i:lid.keySet())
 				if(rid.size()>0){
 					for(Integer r:rid){
-						lid.remove(r);
-						logger.debug("lid remove "+r);
+						if(offset>0){
+							Food f = foodmap.get(r);
+							if(f.getGram()==f.getAdd_gram()){
+								lid.remove(r);
+								logger.debug("lid remove "+r);
+							}
+						}else if(offset<0){
+							Food f = foodmap.get(r);
+							if(f.getGram()==f.getReduce_gram()){
+								lid.remove(r);
+								logger.debug("lid remove "+r);
+							}
+						}
 					}
 				}
 			}//end while
@@ -824,7 +844,7 @@ public class Algorithm implements Balance{
 		logger.info("=====================step 0 init reduce==========================");
 		calNutritionPerFood();
 		removeLimit();
-		calNutrition(false);
+		calNutrition(true);
 		logger.info("=====================step 1 reduce==========================");
 		initTargetOver();		
 		Collections.sort(nutrition,new SortByPercent2OverDesc());
@@ -886,6 +906,7 @@ public class Algorithm implements Balance{
 			balanceDays();
 			calNutrition(true);
 		}
+		isBalanced = true;
 		return this.food;
 	}
 	
@@ -1258,5 +1279,9 @@ public class Algorithm implements Balance{
 	
 	public void logOnOff(Boolean on){
 		logger.setLogOn(on);
+	}
+
+	public Boolean isBalanced() {
+		return isBalanced;
 	}
 }

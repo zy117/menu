@@ -86,6 +86,7 @@ public final class FoodType {
 		case 70:
 		case 71:
 		case 72:
+			return 5;
 		case 73:
 			return 100;
 		case 74:
