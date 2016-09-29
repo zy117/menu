@@ -146,7 +146,7 @@ public class Algorithm implements Balance{
 		for(Food f:food){
 			Integer per = 2;
 			for(int i = 0;i<Define.NUM;i++){
-				temp.setIndex(i,f.getGram()*f.getFoodPart()*f.getIndex(i)/10000);
+				temp.setIndex(i,f.getIndexIntake(i));
 				if(temp.getIndex(i)<standard.getIndex(i)*target.getIndex(i)){
 					per = Math.max(2,per);
 				}else{
@@ -166,11 +166,11 @@ public class Algorithm implements Balance{
 		Float good_protein = 0.0f;
 		for(Food f:food){
 			for(int i =0;i<Define.NUM;i++){
-				cal_nutrition.setIndexSum(i, f.getIndex(i)*f.getGram()*f.getFoodPart()/10000);
+				cal_nutrition.setIndexSum(i, f.getIndexIntake(i));
 			}
 			for(Integer i:Define.ENERGY_HIGH){
 				if(f.getType3().compareTo(i)==0){
-					good_protein += f.getGram()*f.getFoodPart()*f.getProtein()/10000;
+					good_protein += f.getIndexIntake(Define.PROTEIN);
 				}
 			}
 			if(Define.FOOD_NULL<f.getType1()&&f.getType1()<Define.FOOD_INVALID){
@@ -346,7 +346,7 @@ public class Algorithm implements Balance{
 				step.add(r);
 				logger.debug(r.toString());
 				for(int j =0;j<Define.NUM;j++){
-					gOverTarget.setIndexSum(j, -f.getIndex(j)*f.getFoodPart()/10000);
+					gOverTarget.setIndexSum(j, -f.getIndexIntakePerGram(j));
 				}
 				if(gOverTarget.getIndex(index)<0.0f){
 					logger.info("reduce index "+index+" end!");
@@ -465,7 +465,7 @@ public class Algorithm implements Balance{
 						canAdd = false;
 				}
 				for(int i =0;i<Define.NUM;i++){
-					if(i!=index&&gReachTarget.getIndex(i)<f.getIndex(i)*f.getFoodPart()/10000){
+					if(i!=index&&gReachTarget.getIndex(i)<f.getIndexIntakePerGram(i)){
 						needReduce = true;
 						param = i;
 						canAdd = false;
@@ -481,7 +481,7 @@ public class Algorithm implements Balance{
 					step.add(r);
 					logger.debug(r.toString());
 					for(int i =0;i<Define.NUM;i++){
-						gReachTarget.setIndexSum(i,-f.getIndex(i)*f.getFoodPart()/10000);
+						gReachTarget.setIndexSum(i,-f.getIndexIntakePerGram(i));
 					}
 					calNutrition(false);
 					break inner;
@@ -538,7 +538,7 @@ public class Algorithm implements Balance{
 					logger.debug(r.toString());
 					Float[] new_ = calNutrition(false).clone();
 					for(int i =0;i<Define.NUM;i++){
-						gReachTarget.setIndexSum(i, Define.REDUCE_STEP*f.getIndex(i)*f.getFoodPart()/10000);
+						gReachTarget.setIndexSum(i, Define.REDUCE_STEP* f.getIndexIntakePerGram(i));
 						logger.debug("target:"+standard.getIndex(i)*target.getIndex(index)+":old:"+old_[i]+":new:"+new_[i]);
 						if(new_[i]<standard.getIndex(i)*target.getIndex(i)&&old_[i]>standard.getIndex(i)*target.getIndex(i)){
 							feedback[i] = true;
@@ -905,28 +905,28 @@ public class Algorithm implements Balance{
 				continue;
 			}
 			if(index==Define.PROTEIN){
-				Float all = (cal_nutrition.getProtein()-f.getProtein()*f.getFoodPart()/10000)*4
-						+(cal_nutrition.getFat()-f.getFat()*f.getFoodPart()/10000)*9
-						+(cal_nutrition.getCarbohydrate()-f.getCarbohydrate()*f.getFoodPart()/10000)*4;
-				Float fp = (cal_nutrition.getProtein()-f.getProtein()*f.getFoodPart()/10000)*4/all;
+				Float all = (cal_nutrition.getProtein()-f.getIndexIntakePerGram(Define.PROTEIN))*4
+						+(cal_nutrition.getFat()-f.getIndexIntakePerGram(Define.FAT))*9
+						+(cal_nutrition.getCarbohydrate()-f.getIndexIntakePerGram(Define.CARBOHYDRATE))*4;
+				Float fp = (cal_nutrition.getProtein()-f.getIndexIntakePerGram(Define.PROTEIN))*4/all;
 				if(fp>protein_per){
 					canReduce= false;
 					continue;
 				}
 			}else if(index==Define.FAT){
-				Float all = (cal_nutrition.getProtein()-f.getProtein()*f.getFoodPart()/10000)*4
-						+(cal_nutrition.getFat()-f.getFat()*f.getFoodPart()/10000)*9
-						+(cal_nutrition.getCarbohydrate()-f.getCarbohydrate()*f.getFoodPart()/10000)*4;
-				Float fp = (cal_nutrition.getFat()-f.getFat()*f.getFoodPart()/10000)*9/all;
+				Float all = (cal_nutrition.getProtein()-f.getIndexIntakePerGram(Define.PROTEIN))*4
+						+(cal_nutrition.getFat()-f.getIndexIntakePerGram(Define.FAT))*9
+						+(cal_nutrition.getCarbohydrate()-f.getIndexIntakePerGram(Define.CARBOHYDRATE))*4;
+				Float fp = (cal_nutrition.getFat()-f.getIndexIntakePerGram(Define.FAT))*9/all;
 				if(fp>fat_per){
 					canReduce= false;
 					continue;
 				}
 			}else if(index==Define.CARBOHYDRATE){
-				Float all = (cal_nutrition.getProtein()-f.getProtein()*f.getFoodPart()/10000)*4
-						+(cal_nutrition.getFat()-f.getFat()*f.getFoodPart()/10000)*9
-						+(cal_nutrition.getCarbohydrate()-f.getCarbohydrate()*f.getFoodPart()/10000)*4;
-				Float fp = (cal_nutrition.getCarbohydrate()-f.getCarbohydrate()*f.getFoodPart()/10000)*4/all;
+				Float all = (cal_nutrition.getProtein()-f.getIndexIntakePerGram(Define.PROTEIN))*4
+						+(cal_nutrition.getFat()-f.getIndexIntakePerGram(Define.FAT))*9
+						+(cal_nutrition.getCarbohydrate()-f.getIndexIntakePerGram(Define.CARBOHYDRATE))*4;
+				Float fp = (cal_nutrition.getCarbohydrate()-f.getIndexIntakePerGram(Define.CARBOHYDRATE))*4/all;
 				if(fp>carbohydrate_per){
 					canReduce= false;
 					continue;
@@ -959,7 +959,7 @@ public class Algorithm implements Balance{
 					except.add(f);
 				Float[] new_ = calNutrition(false).clone();
 				for(int i =0;i<Define.NUM;i++){
-					gReachTarget.setIndexSum(i,f.getIndex(i)*f.getFoodPart()/10000);
+					gReachTarget.setIndexSum(i,f.getIndexIntakePerGram(i));
 					logger.debug("target:"+standard.getIndex(i)*target.getIndex(index)+":old:"+old_[i]+":new:"+new_[i]);
 					if(new_[i]<standard.getIndex(i)*target.getIndex(i)&&old_[i]>standard.getIndex(i)*target.getIndex(i)){
 						feedback[i] = true;
@@ -1017,28 +1017,28 @@ public class Algorithm implements Balance{
 				}
 			}
 			if(index==Define.PROTEIN){
-				Float all = (cal_nutrition.getProtein()+f.getProtein()*f.getFoodPart()/10000)*4
-						+(cal_nutrition.getFat()+f.getFat()*f.getFoodPart()/10000)*9
-						+(cal_nutrition.getCarbohydrate()+f.getCarbohydrate()*f.getFoodPart()/10000)*4;
-				Float fp = (cal_nutrition.getProtein()+f.getProtein()*f.getFoodPart()/10000)*4/all;
+				Float all = (cal_nutrition.getProtein()+f.getIndexIntakePerGram(Define.PROTEIN))*4
+						+(cal_nutrition.getFat()+f.getIndexIntakePerGram(Define.FAT))*9
+						+(cal_nutrition.getCarbohydrate()+f.getIndexIntakePerGram(Define.CARBOHYDRATE))*4;
+				Float fp = (cal_nutrition.getProtein()+f.getIndexIntakePerGram(Define.PROTEIN))*4/all;
 				if(fp<protein_per){
 					canAdd= false;
 					continue;
 				}
 			}else if(index==Define.FAT){
-				Float all = (cal_nutrition.getProtein()+f.getProtein()*f.getFoodPart()/10000)*4
-						+(cal_nutrition.getFat()+f.getFat()*f.getFoodPart()/10000)*9
-						+(cal_nutrition.getCarbohydrate()+f.getCarbohydrate()*f.getFoodPart()/10000)*4;
-				Float fp = (cal_nutrition.getFat()+f.getFat()*f.getFoodPart()/10000)*9/all;
+				Float all = (cal_nutrition.getProtein()+f.getIndexIntakePerGram(Define.PROTEIN))*4
+						+(cal_nutrition.getFat()+f.getIndexIntakePerGram(Define.FAT))*9
+						+(cal_nutrition.getCarbohydrate()+f.getIndexIntakePerGram(Define.CARBOHYDRATE))*4;
+				Float fp = (cal_nutrition.getFat()+f.getIndexIntakePerGram(Define.FAT))*9/all;
 				if(fp<fat_per){
 					canAdd= false;
 					continue;
 				}
 			}else if(index==Define.CARBOHYDRATE){
-				Float all = (cal_nutrition.getProtein()+f.getProtein()*f.getFoodPart()/10000)*4
-						+(cal_nutrition.getFat()+f.getFat()*f.getFoodPart()/10000)*9
-						+(cal_nutrition.getCarbohydrate()+f.getCarbohydrate()*f.getFoodPart()/10000)*4;
-				Float fp = (cal_nutrition.getCarbohydrate()+f.getCarbohydrate()*f.getFoodPart()/10000)*4/all;
+				Float all = (cal_nutrition.getProtein()+f.getIndexIntakePerGram(Define.PROTEIN))*4
+						+(cal_nutrition.getFat()+f.getIndexIntakePerGram(Define.FAT))*9
+						+(cal_nutrition.getCarbohydrate()+f.getIndexIntakePerGram(Define.CARBOHYDRATE))*4;
+				Float fp = (cal_nutrition.getCarbohydrate()+f.getIndexIntakePerGram(Define.CARBOHYDRATE))*4/all;
 				if(fp<carbohydrate_per){
 					canAdd= false;
 					continue;
@@ -1053,7 +1053,7 @@ public class Algorithm implements Balance{
 				}
 			}
 			for(int i =0;i<Define.NUM;i++){
-				if(gReachTarget.getIndex(i)<f.getIndex(i)*f.getFoodPart()/10000){
+				if(gReachTarget.getIndex(i)<f.getIndexIntakePerGram(i)){
 					canAdd = false;
 					continue;
 				}
@@ -1068,7 +1068,7 @@ public class Algorithm implements Balance{
 				step.add(r);
 				logger.debug(r.toString());
 				for(int i =0;i<Define.NUM;i++){
-					gReachTarget.setIndexSum(i,-f.getIndex(i)*f.getFoodPart()/10000);
+					gReachTarget.setIndexSum(i,-f.getIndexIntakePerGram(i));
 				}
 				calNutrition(false);
 				break;

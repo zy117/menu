@@ -17,7 +17,9 @@ public interface Define {
 	public final static Integer VB1 = 8;
 	public final static Integer VB2 = 9;
 	public final static Integer VC = 10;
+	@Deprecated
 	public final static Integer VE = 11;
+	@Deprecated
 	public final static Integer NA = 12;
 	
 	public final static Integer[] ENERGY_GROUP = {0,1,2,3};
@@ -26,6 +28,7 @@ public interface Define {
 	
 	//SYNC table SZBJ_MenuMgr.foodEnergyType
 	public final static Integer ENERGY_CEREAL = 1;
+	
 	public final static Integer ENERGY_VEGETALITAS = 2;
 	public final static Integer ENERGY_BEANS = 3;
 	public final static Integer ENERGY_TUBERS = 4;

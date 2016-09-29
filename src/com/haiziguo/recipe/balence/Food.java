@@ -4,22 +4,25 @@ import com.haiziguo.recipe.util.Define;
 
 public class Food {
 	private Integer id;
-    private Integer day;
-    private Integer meal;
+    private Integer day;			//  week
+    private Integer meal;			//	mealTimes
+    
+    
     private String menuName;
     private Integer menuId;
     private String foodName;
-    private Integer gram;
-    private Integer add_gram;
-    private Integer reduce_gram;
     private Integer foodId;
+    private Integer gram;
+    private Integer add_gram; 		//克数上限
+    private Integer reduce_gram; 	//克数下限
+
 
     private Integer foodPart = 100;
     private Boolean isAdjustable = true;
     
-    private Integer type1;
-    private Integer type2;
-    private Integer type3;
+    private Integer type1;			//主分类
+    private Integer type2;			//子分类
+    private Integer type3;			//能量分类
     
     private Float energy=0.0f;
     private Float protein=0.0f;
@@ -37,6 +40,29 @@ public class Food {
     private Float vc=0.0f;
     private Float ve=0.0f;
     
+    /**
+     * 获取单一营养素每克摄入量
+     * @param index
+     * @return
+     */
+    public Float getIndexIntakePerGram(Integer index){
+    	return foodPart.floatValue()*getIndex(index)/10000.0f;
+    }
+    
+    /**
+     * 获取单一营养素每克摄入量
+     * @param index
+     * @return
+     */
+    public Float getIndexIntake(Integer index){
+    	return foodPart.floatValue()*gram.floatValue()*getIndex(index)/10000.0f;
+    }
+    
+    /**
+     * 获取单一营养素含量
+     * @param index
+     * @return
+     */
 	public Float getIndex(Integer index){
 		switch(index){
 		case 1:
@@ -416,7 +442,3 @@ public class Food {
 	}
     
 }
-
-
-
-
