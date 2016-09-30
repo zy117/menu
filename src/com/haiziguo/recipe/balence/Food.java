@@ -135,6 +135,14 @@ public class Food {
     	this.reduce_gram = FoodType.getMinGram(type2);
     }
     
+    /**
+     * 食谱1.0构造
+     * @deprecated since 2.0
+     * @param id
+     * @param obj
+     * @see Food(Integer id, Object obj)
+     */
+    @Deprecated
     public Food(Integer id, Object[] obj 
     		){
     	this.id = id;
@@ -172,8 +180,10 @@ public class Food {
     	}
     }
     /**
+     * 测试构造
      * @author zhangy@mywayinfo.com
      * @version 0.0.1
+     * @deprecated for test
      * @param energy 能量，单位（千卡/100g）
      * @param protein 蛋白质，单位（克/100g）
      * @param fat 脂肪，单位（克/100g)
@@ -189,6 +199,7 @@ public class Food {
      * @param na 钠，单位（/100g）
      * 
      */
+    @Deprecated
     public Food(
     		Integer id
     		,Integer day

@@ -84,19 +84,17 @@ public class Params {
     }
     
     public String toString(){
-    	return "energy = "+energy+",\t"+
-    		   "protein = "+protein+",\t"+
-    		   "fat = "+fat+",\t"+
-    		   "carbohydrate = "+carbohydrate+",\t"+
-    		   "ca = "+ca+",\t"+
-    		   "fe = "+fe+",\t"+
-    		   "zn = "+zn+",\t"+
-    		   "va = "+va+",\t"+
-    		   "vb1 = "+vb1+",\t"+
-    		   "vb2 = "+vb2+",\t"+
-    		   "vc = "+vc+",\t"+
-    		   "ve = "+ve+",\t"+
-    		   "na = "+na;
+    	return "energy = "+Define.FormatFloat.format(energy)+",\t"+
+    		   "protein = "+Define.FormatFloat.format(protein)+",\t"+
+    		   "fat = "+Define.FormatFloat.format(fat)+",\t"+
+    		   "carbohydrate = "+Define.FormatFloat.format(carbohydrate)+",\t"+
+    		   "ca = "+Define.FormatFloat.format(ca)+",\t"+
+    		   "fe = "+Define.FormatFloat.format(fe)+",\t"+
+    		   "zn = "+Define.FormatFloat.format(zn)+",\t"+
+    		   "va = "+Define.FormatFloat.format(va)+",\t"+
+    		   "vb1 = "+Define.FormatFloat.format(vb1)+",\t"+
+    		   "vb2 = "+Define.FormatFloat.format(vb2)+",\t"+
+    		   "vc = "+Define.FormatFloat.format(vc);
     }
     
     public String toStringPer100(){
@@ -110,25 +108,21 @@ public class Params {
     		   "va = "+va*100+"%,\t"+
     		   "vb1 = "+vb1*100+"%,\t"+
     		   "vb2 = "+vb2*100+"%,\t"+
-    		   "vc = "+vc*100+"%,\t"+
-    		   "ve = "+ve*100+"%,\t"+
-    		   "na = "+na*100;
+    		   "vc = "+vc*100+"%";
     }
     
     public String toStringPer(){
-    	return "energy = "+energy+"%,\t"+
-    		   "protein = "+protein+"%,\t"+
-    		   "fat = "+fat+"%,\t"+
-    		   "carbohydrate = "+carbohydrate+"%,\t"+
-    		   "ca = "+ca+"%,\t"+
-    		   "fe = "+fe+"%,\t"+
-    		   "zn = "+zn+"%,\t"+
-    		   "va = "+va+"%,\t"+
-    		   "vb1 = "+vb1+"%,\t"+
-    		   "vb2 = "+vb2+"%,\t"+
-    		   "vc = "+vc+"%,\t"+
-    		   "ve = "+ve+"%,\t"+
-    		   "na = "+na+"%";
+    	return "energy = "+Define.FormatFloat.format(energy)+"%,\t"+
+     		   "protein = "+Define.FormatFloat.format(protein)+"%,\t"+
+     		   "fat = "+Define.FormatFloat.format(fat)+"%,\t"+
+     		   "carbohydrate = "+Define.FormatFloat.format(carbohydrate)+"%,\t"+
+     		   "ca = "+Define.FormatFloat.format(ca)+"%,\t"+
+     		   "fe = "+Define.FormatFloat.format(fe)+"%,\t"+
+     		   "zn = "+Define.FormatFloat.format(zn)+"%,\t"+
+     		   "va = "+Define.FormatFloat.format(va)+"%,\t"+
+     		   "vb1 = "+Define.FormatFloat.format(vb1)+"%,\t"+
+     		   "vb2 = "+Define.FormatFloat.format(vb2)+"%,\t"+
+     		   "vc = "+Define.FormatFloat.format(vc)+"%";
     }
     
     public void setZero(){

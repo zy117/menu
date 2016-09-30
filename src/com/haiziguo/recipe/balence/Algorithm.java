@@ -136,39 +136,46 @@ public class Algorithm implements Balance{
 		for(Integer index = 0;index < nutrition.length;index++ ){
 			standard.setIndex(index, nutrition[index]);
 		}
-		logger.info("standard:"+standard.toString());
+		logger.info("standard:\t"+standard.toString());
 
 		Float energy_all = standard.getIndex(Define.PROTEIN)*4+standard.getIndex(Define.FAT)*9+standard.getIndex(Define.CARBOHYDRATE)*4;
 		Float protein_per = standard.getIndex(Define.PROTEIN)*4/energy_all;
 		Float fat_per = standard.getIndex(Define.FAT)*9/energy_all;
 		Float carbohydrate_per = standard.getIndex(Define.CARBOHYDRATE)*4/energy_all;
-		if(protein_per.compareTo(Define.ENERGY_PROTEIN_UP)>0||protein_per.compareTo(Define.ENERGY_PROTEIN_DOWN)<0){
+		if(protein_per.compareTo(Define.ENERGY_PROTEIN_UP)>0
+				||protein_per.compareTo(Define.ENERGY_PROTEIN_DOWN)<0){
 			logger.warn("WARNING:  STANDARD PROTEIN      IS NOT GOOD: protein:" + protein_per*100+"%, fat:"+fat_per*100+"%, carbohydrate:"+carbohydrate_per*100+"%");
 		}
-		if(fat_per.compareTo(Define.ENERGY_FAT_UP)>0||fat_per.compareTo(Define.ENERGY_FAT_DOWN)<0){
+		if(fat_per.compareTo(Define.ENERGY_FAT_UP)>0
+				||fat_per.compareTo(Define.ENERGY_FAT_DOWN)<0){
 			logger.warn("WARNING:  STANDARD FAT          IS NOT GOOD: protein:" + protein_per*100+"%, fat:"+fat_per*100+"%, carbohydrate:"+carbohydrate_per*100+"%");
 		}
-		if(carbohydrate_per.compareTo(Define.ENERGY_CARBOHYDRATE_UP)>0||carbohydrate_per.compareTo(Define.ENERGY_CARBOHYDRATE_DOWN)<0){
+		if(carbohydrate_per.compareTo(Define.ENERGY_CARBOHYDRATE_UP)>0
+				||carbohydrate_per.compareTo(Define.ENERGY_CARBOHYDRATE_DOWN)<0){
 			logger.warn("WARNING:  STANDARD CARBOHYDRATE IS NOT GOOD: protein:" + protein_per*100+"%, fat:"+fat_per*100+"%, carbohydrate:"+carbohydrate_per*100+"%");
 		}
 		
 		this.isStandardSet = true;
 	}
-	
+	/**
+	 * 根据营养素计算每个食物单日摄入最大量
+	 */
 	private void calNutritionPerFood(){
-		Params temp = new Params();
 		for(Food f:food){
 			for(int i = 0;i<Define.NUM;i++){
-				temp.setIndex(i,f.getIndexIntake(i));
-				//如果单一营养单日超标
 				Float recom = standard.getIndex(i)*target.getIndex(i)/days.floatValue();
-				if(temp.getIndex(i)>recom){
-					Integer max = (int) (recom/f.getIndexIntakePerGram(i));//得到每日最多摄入克数
+				Integer max = (int) (recom/f.getIndexIntakePerGram(i));//得到每日最多摄入克数
+				if(max<f.getAdd_gram()){
 					f.setAdd_gram(max);
-					if(f.getReduce_gram()>max){
+					if(max<f.getReduce_gram()){
 						f.setReduce_gram(max);
 					}
 				}
+			}
+			if(f.getReduce_gram()>f.getAdd_gram()){
+				logger.warn("Food:"+f.getMenuName()+":"+f.getFoodName()+"("+f.getFoodId()+")"+"limit error");
+				logger.warn("["+f.getReduce_gram()+","+f.getAdd_gram()+"]");
+				f.setReduce_gram(f.getAdd_gram());
 			}
 		}
 	}
@@ -186,32 +193,35 @@ public class Algorithm implements Balance{
 			}
 		}
 		if(debug){
-			logger.info("menu list cal_nutrition:" + cal_nutrition.toString());
+			logger.info("menu list cal_nutrition:\t" + cal_nutrition.toString());
 		}
+		calNutritionPercent(debug);
 		Float energy_all = cal_nutrition.getIndex(Define.PROTEIN)*4+cal_nutrition.getIndex(Define.FAT)*9+cal_nutrition.getIndex(Define.CARBOHYDRATE)*4;
 		this.protein_per = cal_nutrition.getIndex(Define.PROTEIN)*4/energy_all;
 		this.fat_per = cal_nutrition.getIndex(Define.FAT)*9/energy_all;
 		this.carbohydrate_per = cal_nutrition.getIndex(Define.CARBOHYDRATE)*4/energy_all;
+		this.checkhighproteinprecent = good_protein/cal_nutrition.getIndex(Define.PROTEIN);
 		if(debug){
-			logger.info("energy_all  :" + energy_all);
-			logger.info("protein     :" + this.protein_per*100+"%");
-			logger.info("fat         :" + this.fat_per*100+"%");
-			logger.info("carbohydrate:" + this.carbohydrate_per*100+"%");
+			logger.info("energy_all  :" + Define.FormatFloat.format(energy_all));
+			logger.info("protein     :" + Define.FormatFloat.format(this.protein_per*100)+"%");
+			logger.info("fat         :" + Define.FormatFloat.format(this.fat_per*100)+"%");
+			logger.info("carbohydrate:" + Define.FormatFloat.format(this.carbohydrate_per*100)+"%");
+			logger.info("high protein:" + Define.FormatFloat.format(this.checkhighproteinprecent*100)+"%");
 		}
-		checkhighproteinprecent = good_protein/cal_nutrition.getIndex(Define.PROTEIN);
-		if(debug){
-			logger.info("high protein:"+checkhighproteinprecent*100+"%");
-		}
-		calNutritionPercent(debug);
+		
 		return cal_nutrition.toFloatArray();
 	}
-	
+	/**
+	 * 计算当前摄入占推荐比
+	 * @param debug
+	 * @return
+	 */
 	private Float [] calNutritionPercent(Boolean debug){
 		for(int i =0;i<Define.NUM;i++){
 			cal_nutrition_percent.setIndex(i, 100*cal_nutrition.getIndex(i)/standard.getIndex(i));
 		}
 		if(debug){
-			logger.info("menu list cal_nutrition_percent:"+cal_nutrition_percent.toStringPer());
+			logger.info("menu list cal_percent:\t"+cal_nutrition_percent.toStringPer());
 		}
 
 		for(Nutrition n:nutrition){
@@ -222,7 +232,9 @@ public class Algorithm implements Balance{
 		}
 		return cal_nutrition_percent.toFloatArray();
 	}
-	
+	/**
+	 * 判断解是否满足DRIS
+	 */
 	public Boolean isNutritionMeetTarget(){
 		for(Nutrition n:nutrition){
 			if(n.getPercent2target()>0.0f)
@@ -245,7 +257,7 @@ public class Algorithm implements Balance{
 			return;
 		}
 		this.target = new Params(target);
-		logger.info("target:"+this.target.toStringPer100());
+		logger.info("target:\t"+this.target.toStringPer100());
 		this.isTargetSet = true;
 	}
 	
@@ -321,7 +333,10 @@ public class Algorithm implements Balance{
 		}
 	}
 	
-	
+	/**
+	 * 先减超量营养素食物
+	 * @param index
+	 */
 	private void reduceFood(Integer index){
 		List<Nutrition> temp = new ArrayList<Nutrition>(nutrition);
 		Collections.sort(temp,new SortByPercent2OverAsc());
@@ -366,6 +381,9 @@ public class Algorithm implements Balance{
 		calNutrition(false);
 	}
 	
+	/**
+	 * 加食物以满足最低DRIS
+	 */
 	private void readd(){
 		Collections.sort(nutrition,new SortByPercent2TargetDesc());
 		for(Nutrition n:nutrition){
@@ -422,6 +440,12 @@ public class Algorithm implements Balance{
 			}
 		}	
 	}
+	
+	/**
+	 * 添加食物，配平DRIS
+	 * @param index
+	 * @param except
+	 */
 	private void addFood(Integer index, List<Food> except){
 		if(except.size() == food.size()){
 			logger.info("except full no more food for add");
@@ -577,22 +601,25 @@ public class Algorithm implements Balance{
 		for(int i=0;i<Define.NUM;i++){
 			gOverTarget.setIndex(i, cal_nutrition.getIndex(i)-standard.getIndex(i)*(target.getIndex(i)+target_over_shift.getIndex(i)));
 		}
-		logger.info("nutrition over gram:"+gOverTarget.toString());
+		logger.info("nutrition over gram:\t"+gOverTarget.toString());
 	}
 	
 	private void initTargerReach(){
 		for (int i=0;i<Define.NUM;i++){
 				gReachTarget.setIndex(i, standard.getIndex(i)*(target.getIndex(i)+target_max_shift.getIndex(i)-Define.ENERGY_BALANCE_REMAIN)-cal_nutrition.getIndex(i));
 		}
-		logger.info("nutrition reach gram:"+gReachTarget.toString());
+		logger.info("nutrition reach gram:\t"+gReachTarget.toString());
 	}
 	private void reinitTargerReach(){
 		for (int i=0;i<Define.NUM;i++){
 				gReachTarget.setIndexSum(i, standard.getIndex(i)*Define.ENERGY_BALANCE_REMAIN);// for energy balance
 		}
-		logger.info("nutrition rereach gram:"+gReachTarget.toString());
+		logger.info("nutrition rereach gram:\t"+gReachTarget.toString());
 	}
 	
+	/**
+	 * 均衡每日食物调整克数
+	 */
 	private void balanceDays(){
 		/*
 		 *	map     HashMap<Integer,Integer>存放菜谱调整克数的map
@@ -829,6 +856,10 @@ public class Algorithm implements Balance{
 			logger.info(" day "+ d+" : "+ dayOffset.get(d)+"g");
 		}
 	}
+	
+	/**
+	 * 配平主方法
+	 */
 	public List<Food> doBalance(){
 		if(!this.isFoodInited||!this.isStandardSet||!this.isTargetSet){
 			logger.error("error! not inited, cannot do balance");
@@ -858,7 +889,6 @@ public class Algorithm implements Balance{
 		calNutrition(true);		
 		Date t2 = new Date();
 		Integer n1=step.size();
-
 		logger.info("=====================step 2 add=============================");
 		initTargerReach();
 		Collections.sort(nutrition,new SortByPercent2TargetDesc());
@@ -870,10 +900,8 @@ public class Algorithm implements Balance{
 		}
 		logger.info("=====================step 2 end=============================");
 		calNutrition(true);
-		//printMenu();
 		Date t3 = new Date();
-		Integer n2=step.size();
-		
+		Integer n2=step.size();		
 		logger.info("=====================step 3 energy cost==========================");
 		reinitTargerReach();
 		logger.info("protein     :" + this.protein_per*100+"%");
@@ -887,7 +915,6 @@ public class Algorithm implements Balance{
 		calNutrition(true);
 		Date t4 = new Date();
 		Integer n3=step.size();
-
 		logger.info("=====================step 4 balance==========================");
 		balanceDays();
 		logger.info("=====================step 4 end==========================");
@@ -910,8 +937,10 @@ public class Algorithm implements Balance{
 		return this.food;
 	}
 	
+	/**
+	 * 按分类上下限预调整食物
+	 */
 	private void removeLimit() {
-		// TODO Auto-generated method stub
 		for(Food f:food){
 			if(f.getGram()<f.getReduce_gram()){
 				Integer add = f.getReduce_gram() - f.getGram();
@@ -938,6 +967,11 @@ public class Algorithm implements Balance{
 		
 	}
 
+	/**
+	 * 配平能量占比，减法
+	 * @param index
+	 * @param except
+	 */
 	private void balanceReduce(Integer index,List<Food> except){
 		Collections.sort(food,new SortByParamEnergy(Define.ORDER_DESC,index));
 		Boolean isReduced = false;
@@ -1015,8 +1049,7 @@ public class Algorithm implements Balance{
 						feedback[i] = true;
 					}else{
 						feedback[i] = false;
-					}
-						
+					}						
 				}
 				break;
 			}
@@ -1040,6 +1073,11 @@ public class Algorithm implements Balance{
 		}
 	}
 	
+	/**
+	 * 配平能量占比，加法
+	 * @param index
+	 * @param except
+	 */
 	private void balanceAdd(Integer index,List<Food> except){
 		Collections.sort(food,new SortByParamEnergy(Define.ORDER_DESC,index));
 		Boolean isAdded = false;
@@ -1129,6 +1167,10 @@ public class Algorithm implements Balance{
 		}
 	}
 	
+	/**
+	 * 配平能量占比
+	 * @param except
+	 */
 	private void balanceEnergy(List<Food> except) {
 		if(this.protein_per>Define.ENERGY_PROTEIN_DOWN&&this.protein_per<Define.ENERGY_PROTEIN_UP
 				&&this.fat_per>Define.ENERGY_FAT_DOWN&&this.fat_per<Define.ENERGY_FAT_UP
@@ -1264,6 +1306,9 @@ public class Algorithm implements Balance{
 		return l;
 	}
 	
+	/**
+	 * 获取平衡后的克数
+	 */
 	public Map<Integer,Integer> getResultsMap(){
 		Map<Integer,Integer> map = new HashMap<Integer,Integer>();
 		Collections.sort(food,new SortById());
@@ -1281,6 +1326,9 @@ public class Algorithm implements Balance{
 		logger.setLogOn(on);
 	}
 
+	/**
+	 * 查询是否经过配平
+	 */
 	public Boolean isBalanced() {
 		return isBalanced;
 	}

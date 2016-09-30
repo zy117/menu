@@ -1,5 +1,6 @@
 package com.haiziguo.recipe.util;
 
+import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -90,4 +91,6 @@ public interface Define {
 	public final static Integer LOG_INFO=1;
 	public final static Integer LOG_WARN=2;
 	public final static Integer LOG_ERROR=3;
+	
+	public final static DecimalFormat FormatFloat = new  DecimalFormat(".00");
 }
