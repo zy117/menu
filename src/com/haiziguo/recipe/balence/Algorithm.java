@@ -85,8 +85,12 @@ public class Algorithm implements Balance{
 		days = day.size();
 		meals = meal.size();
 		logger.info("banlance "+days+" days "+meals+" meals/day menu!");
-		//type.plusDaysAndMeals(days, 1.0f);
+		initNutrition();
 		this.isFoodInited = true;
+		
+	}
+	
+	private void initNutrition(){
 		Nutrition ENERGY 		= new Nutrition(Define.ENERGY,cal_nutrition_percent.getIndex(Define.ENERGY));
 		nutrition.add(ENERGY);
 		Nutrition PROTEIN 		= new Nutrition(Define.PROTEIN,cal_nutrition_percent.getIndex(Define.PROTEIN));
@@ -109,7 +113,6 @@ public class Algorithm implements Balance{
 		nutrition.add(VB2);
 		Nutrition VC 			= new Nutrition(Define.VC,cal_nutrition_percent.getIndex(Define.VC));
 		nutrition.add(VC);
-		//logger.info(type.toString());
 	}
 		
 	public void printMenu(){
